@@ -1,0 +1,22 @@
+name = "TCA"
+version = "0.1.0"
+keywords = ["math", "algebra", "temporal"]
+defaultTargets = ["TCA"]
+
+[leanOptions]
+pp.unicode.fun = true
+relaxedAutoImplicit = false
+linter.style.whitespace = false
+
+[[require]]
+name = "mathlib"
+scope = "leanprover-community"
+rev = "v4.29.1"
+
+[[lean_lib]]
+name = "TemporalClosureAlgebra"
+srcDir = "spec"
+
+[[lean_lib]]
+name = "QuantumAsTCA"
+srcDir = "spec"

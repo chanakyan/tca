@@ -1,0 +1,46 @@
+#!/usr/bin/env zsh
+# Pre-commit hook for TCA.
+# Gate: Lean must build with no errors.
+setopt NO_UNSET
+fail=0
+
+staged_lean=$(git diff --cached --name-only --diff-filter=ACM -- '*.lean')
+
+if [[ -n "$staged_lean" ]]; then
+    echo "LEAN: building..."
+    build_out=$(lake build 2>&1)
+    if [[ $? -ne 0 ]]; then
+        echo "FAIL: Lean build failed."
+        echo "$build_out" | grep "error:" | head -10
+        exit 1
+    fi
+    echo "LEAN: build passed."
+
+    # Generate certificate
+    echo "LEAN: generating certificate..."
+    cert_out=$(lake env lean PrintAxioms.lean 2>&1 | grep "depends on")
+    if [[ -n "$cert_out" ]]; then
+        ts=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+        hash=$(git rev-parse --short HEAD 2>/dev/null || echo "pre-commit")
+        cert_file="proof/certs/lean_${ts//:/-}.txt"
+        mkdir -p proof/certs
+        echo "LEAN PROOF CERTIFICATE" > "$cert_file"
+        echo "======================" >> "$cert_file"
+        echo "timestamp: $ts" >> "$cert_file"
+        echo "commit:    $hash" >> "$cert_file"
+        echo "" >> "$cert_file"
+        echo "$cert_out" >> "$cert_file"
+        git add proof/certs/ 2>/dev/null
+        echo "LEAN: certificate staged."
+    fi
+fi
+
+# LaTeX: no markdown
+staged_tex=$(git diff --cached --name-only --diff-filter=ACM -- '*.md')
+if [[ -n "$staged_tex" ]]; then
+    echo "FAIL: .md files detected. LaTeX only."
+    exit 1
+fi
+
+echo "All pre-commit checks passed."
+exit 0

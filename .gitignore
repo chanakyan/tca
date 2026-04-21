@@ -1,0 +1,10 @@
+.lake/
+build/
+*.olean
+*.ilean
+*.trace
+*.log
+*.aux
+*.out
+*.toc
+.DS_Store

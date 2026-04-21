@@ -1,0 +1,247 @@
+\documentclass[11pt]{article}
+
+\usepackage{fontspec}
+\setmainfont{TeX Gyre Pagella}
+\setmathsf{TeX Gyre Pagella Math}[Scale=MatchUppercase]
+
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage[a4paper, margin=1in]{geometry}
+\usepackage{microtype}
+\usepackage[bottom, hang, flushmargin]{footmisc}
+\usepackage{booktabs}
+\usepackage{adjustbox}
+\usepackage{siunitx}
+\usepackage[inline]{enumitem}
+\usepackage{caption}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, breakable}
+
+\usepackage[
+  pdfa,
+  a-2b,
+  mathxmp
+]{pdfx}
+
+\usepackage[capitalise, nameinlink]{cleveref}
+\usepackage{orcidlink}
+
+\definecolor{axiomfill}{RGB}{232, 241, 255}
+\definecolor{axiomborder}{RGB}{70, 125, 200}
+\definecolor{theoremfill}{RGB}{255, 250, 228}
+\definecolor{theoremborder}{RGB}{190, 145, 30}
+\definecolor{defnfill}{RGB}{240, 240, 240}
+\definecolor{defnborder}{RGB}{110, 110, 110}
+
+\newtcolorbox{axiomBOX}[2][]{
+  enhanced, breakable,
+  colback=axiomfill, colframe=axiomborder,
+  coltitle=white, fonttitle=\bfseries,
+  boxrule=0.6pt, arc=2pt,
+  left=8pt, right=8pt, top=6pt, bottom=6pt,
+  title={#2}, #1
+}
+
+\newtcolorbox{theoremBOX}[2][]{
+  enhanced, breakable,
+  colback=theoremfill, colframe=theoremborder,
+  coltitle=white, fonttitle=\bfseries,
+  boxrule=0.8pt, arc=2pt,
+  borderline west={3pt}{0pt}{theoremborder},
+  left=8pt, right=8pt, top=6pt, bottom=6pt,
+  title={#2}, #1
+}
+
+\newtcolorbox{defnBOX}[2][]{
+  enhanced, breakable,
+  colback=defnfill, colframe=defnborder,
+  coltitle=white, fonttitle=\bfseries,
+  boxrule=0.4pt, arc=2pt,
+  left=8pt, right=8pt, top=5pt, bottom=5pt,
+  title={#2}, #1
+}
+
+\title{\bfseries Temporal Closure Algebra:\\[0.3em]
+  {\large A Formal Definition}}
+
+\author{Rajeshkumar Venugopal\,\orcidlink{0009-0002-1838-5976}\\
+  Third Buyer Advisory LLC\\
+  \texttt{vrajeshkumar@gmail.com}}
+
+\date{April 2026}
+
+\begin{document}
+\maketitle
+\skip\footins=10pt
+
+\begin{abstract}
+\noindent
+Classical closure algebra studies sets closed under synchronous operations: groups, rings, fields, topological spaces, measure spaces. In all cases the operation and its result inhabit the same carrier at the same instant. This paper defines a sibling theory, \emph{Temporal Closure Algebra} (TCA), which studies sets closed under bilateral postings in irreversible time. A TCA has a single free parameter — the origin $t = 0$ at which the first side of an event posts. Everything else is forced by the Double-Entry Axiom: open items, counterparty coupling, default as a limit statement, grace windows, priority, settlement topology. We define the primitive objects, state the axioms, and derive the theorems that reproduce irreversibility and finite externalization as consequences rather than postulates. The theory is sited with respect to classical closure algebra as its synchronous limit ($t \to 0$) and with respect to topology as its frozen-time projection. Named instances of TCA include thermodynamics, Kirchhoff's laws, Pacioli double-entry, Phillips hydraulic macroeconomics, cargo-tag metrology (Meluhha, ca.\ 2500 BCE), the BIS FX settlement graph with its Euler-characteristic invariant, operations-research duality, and the Temporal Stability Framework.
+\end{abstract}
+
+\section{Preliminaries}
+
+Classical closure algebra\footnote{Used here in the generic sense of "set $S$ closed under operation $\star$ such that $a \star b \in S$ for all $a, b \in S$." The term subsumes group theory, ring theory, topology, measure theory, and related fields, all of which are defined by closure conditions on synchronous operations.} fixes a carrier set $S$ and a family of operations $\{\star_i\}$ and requires that operation outputs remain in $S$. The operations are \emph{synchronous}: inputs and outputs inhabit the same carrier at the same instant of the theory's time, and the theory typically has no time dimension at all. A group's binary operation does not take time; a topological closure does not unfold.
+
+The observation motivating this paper is that many fields of science and institutional practice instead deal with closure that \emph{unfolds in time}. A merchant consigns goods at one moment; receipt is confirmed at a later moment. A thermodynamic system receives heat; work is done later. A charge enters a node; the counterparty charge exits in finite time according to the circuit's dynamics. A loan is originated; repayment lands, or does not, over a schedule. In each case closure is \emph{bilateral} — two sides that must match — and \emph{asynchronous} — the sides land at different times, with the gap carrying the entire structure of default, distortion, delay, adjustment, and coupling.
+
+No unified formal treatment of this second class exists. Each discipline has developed its own vocabulary: balance identity, conservation law, Kirchhoff's law, reconciliation, settlement, witness, closure gap. The present paper proposes that these are instances of a single algebraic structure, and gives the formal definition.
+
+\section{Primitive Objects}
+
+\begin{defnBOX}{Substrate}{substrate}
+A \emph{substrate} is a tuple $(S, R)$ where $S$ is a non-empty set (the \emph{resource carrier}) and $R$ is a finite set of \emph{posting references} (accounts, nodes, parties). Elements of $S$ are the resources that move; elements of $R$ are the locations they move between.
+\end{defnBOX}
+
+\begin{defnBOX}{Time}{time}
+\emph{Time} is a totally ordered set $(T, \leq)$ with a distinguished element $0 \in T$ called the \emph{origin}. The ordering is \emph{irreversible}: for $t_1, t_2 \in T$ with $t_1 < t_2$, the reverse ordering is not a valid time. We take $T = \mathbb{R}_{\geq 0}$ throughout.
+\end{defnBOX}
+
+\begin{defnBOX}{Event}{event}
+An \emph{event} on a substrate $(S, R)$ is a triple $(r, \ell_L, \ell_R)$ where $r \in S$ is the resource moved, $\ell_L \in R$ is the left reference (the side that posts first), and $\ell_R \in R$ is the right reference, with $\ell_L \neq \ell_R$. Denote the set of events by $E$.
+\end{defnBOX}
+
+\begin{defnBOX}{Posting}{posting}
+A \emph{posting} is a 4-tuple $(e, s, t, a)$ where $e \in E$ is the event, $s \in \{L, R\}$ is the \emph{side}, $t \in T$ is the posting time, and $a \in R$ is the posting agent (normally $a = \ell_s$). We write $p_L(e, t)$ for the left-side posting and $p_R(e, t)$ for the right-side posting of event $e$.
+\end{defnBOX}
+
+\begin{defnBOX}{Ledger}{ledger}
+A \emph{ledger} $\mathcal{L}$ at time $t$ is the set of all postings with posting time $\leq t$. The ledger is strictly monotone in time: $\mathcal{L}(t_1) \subseteq \mathcal{L}(t_2)$ whenever $t_1 \leq t_2$, and postings once added are never removed.
+\end{defnBOX}
+
+\begin{defnBOX}{Closure}{closure}
+An event $e$ is \emph{closed at time $t$} in ledger $\mathcal{L}$ if both $p_L(e, t_L) \in \mathcal{L}(t)$ and $p_R(e, t_R) \in \mathcal{L}(t)$ for some $t_L, t_R \leq t$. An event that is not closed is \emph{open}; the postings present for an open event are called \emph{open items}.
+\end{defnBOX}
+
+\section{Axioms}
+
+A \emph{Temporal Closure Algebra} on substrate $(S, R)$ is a ledger-valued function of time $\mathcal{L}: T \to 2^{\text{postings}}$ satisfying the two axioms below.
+
+\begin{axiomBOX}{Axiom 1 --- Double-Entry}{axiom-de}
+For every event $e \in E$ with a posting in the ledger, the ledger is in a \emph{closed state} with respect to $e$ only if both $p_L(e, t_L)$ and $p_R(e, t_R)$ are present. The ledger admits no state in which one side of an event is posted, the other is absent, and the event is nonetheless treated as closed. Equivalently: half-entries are not closures.
+\end{axiomBOX}
+
+\begin{axiomBOX}{Axiom 2 --- Monotone Time}{axiom-time}
+The ledger is strictly monotone in time: postings once added are never removed by the passage of time alone. Reversal of a posting requires a new closed event (a \emph{reversing entry}) which is itself subject to Axiom~1.
+\end{axiomBOX}
+
+\bigskip
+
+\noindent A TCA instance is fully specified by the triple $((S, R), T, \mathcal{L})$ satisfying the above. The origin $t = 0$ of $T$ is the only free parameter at the theory level: it is the reference moment from which posting times are measured. Different choices of origin correspond to different coordinate frames on the same underlying process.
+
+\section{Basic Theorems}
+
+\begin{theoremBOX}{Theorem 1 --- Irreversibility of Closure}{irrev}
+Let $e \in E$ be closed at time $t^\star$. Then for all $t > t^\star$, the ledger $\mathcal{L}(t)$ retains at least the postings $p_L(e, t_L)$ and $p_R(e, t_R)$ with $t_L, t_R \leq t^\star$. No unilateral action of either posting agent removes these postings.
+\end{theoremBOX}
+
+\begin{proof}
+By Axiom~2, postings once added are not removed by time. Removing a posting requires a reversing entry, which by Axiom~1 must itself be bilateral: the reversing entry posts against the original's counterparty and requires the counterparty's posting to close. A unilateral act is a one-sided posting, which by Axiom~1 is not a closed event and therefore does not constitute reversal. Hence no sequence of unilateral actions can remove a closed event from the ledger. \qed
+\end{proof}
+
+\begin{theoremBOX}{Theorem 2 --- Finite Externalization}{finite-ext}
+Let $N_{\text{open}}(t) = |\{e \in E : e \text{ open at } t\}|$ be the count of open events at time $t$. If the counterparty set $R$ is finite and each counterparty $r \in R$ has bounded capacity $\kappa(r)$ to absorb open items directed at it, then $N_{\text{open}}(t)$ is bounded above by $\sum_{r \in R} \kappa(r)$ plus the count of coupled open items at $t$.
+\end{theoremBOX}
+
+\begin{proof}
+Each open event has a right-side reference $\ell_R \in R$ awaiting settlement. If the aggregate count of open events with $\ell_R = r$ exceeds $\kappa(r)$, then capacity is saturated at $r$ and further open events cannot be settled without either (i) expanding capacity at $r$, or (ii) coupling — multiple open events sharing the same settlement resource at $r$. Case (ii) is coupled open items; case (i) does not resolve because $R$ is finite and per-counterparty capacity is bounded. Indefinite externalization would require $\sum_r \kappa(r) \to \infty$, contradicting the finite-capacity assumption. \qed
+\end{proof}
+
+\begin{theoremBOX}{Theorem 3 --- Coupling}{coupling}
+If $e_1, e_2 \in E$ are both open at time $t$ and share the same right-side reference ($\ell_R(e_1) = \ell_R(e_2)$), then their closures are not independent: $\Pr[e_1 \text{ closes by } t' \mid e_2 \text{ closes by } t']$ depends on the capacity of the shared reference at $t'$.
+\end{theoremBOX}
+
+\begin{proof}
+Let $r = \ell_R(e_1) = \ell_R(e_2)$ and let $\kappa_r(t)$ be the available closure capacity at $r$ between $t$ and $t'$. If $\kappa_r(t') < 2 \cdot \text{(required per event)}$, at most one of $e_1, e_2$ closes, so the conditional probability is not equal to the marginal. If $\kappa_r(t') \geq $ combined requirement, both can close and the conditional equals the marginal only in that regime. The closures are conditionally independent of $\kappa_r$, not independent simpliciter. \qed
+\end{proof}
+
+\begin{theoremBOX}{Theorem 4 --- Default as Limit}{default}
+An event $e$ is said to be in \emph{default} at time $t$ if $e$ is open at $t$ and its expected closure time $\mathbb{E}[t_R \mid t_L]$ is unbounded. Default is a limit statement on the closure-time distribution; it is not an additional primitive.
+\end{theoremBOX}
+
+\begin{proof}
+Closure in TCA is the event $p_R(e, t_R) \in \mathcal{L}(t_R)$ for some $t_R \in T$. If $\mathbb{E}[t_R \mid t_L]$ is unbounded, the right-side posting has no finite expected time; the event does not close in the expected-time sense. Nothing beyond Axioms~1 and 2 and the primitive definitions is required. \qed
+\end{proof}
+
+\section{Derived Structure}
+
+The following emerge as consequences of the two axioms plus the primitive definitions, without additional postulates.
+
+\begin{description}[leftmargin=0pt, itemindent=0pt, labelsep=0.4em, labelwidth=!, font=\bfseries]
+
+\item[Open items.] Postings of one side not yet matched by the other. Exist whenever $t < t^\star$ for some event $e$. Axiomatically required by the combination of DE and monotone time with $t = 0$ set.
+
+\item[Grace window.] The permitted range $[t_L, t_L + \Delta]$ within which the right-side posting must land for the event not to be flagged as distressed. $\Delta$ is substrate-specific (physical, institutional, bandwidth) but its existence is forced by finite counterparty capacity.
+
+\item[Witnessing.] The requirement that postings be durably recorded from $t_L$ through $t_R$ so that closure at $t_R$ can be verified against the original posting. Follows from the definition of ledger plus Axiom~2: if the ledger were not durable, matching at $t_R$ would be ill-defined.
+
+\item[Adjustability.] The admissibility of reversing entries before $t_R$ in response to information revealed between $t_L$ and $t_R$. Required for the ledger to remain consistent with reality; preserved by Axiom~1 since every adjustment is itself a bilateral posting.
+
+\item[Shadow price.] The exchange rate between the resource on the left side and the resource on the right side, which must be specified at $t_L$ and may not equal the rate at $t_R$. Follows from the possibility of the two sides drawing from different substrates (goods against currency, heat against work).
+
+\item[Priority order.] The sequencing rule when multiple open events share a settlement reference. Required by Theorem~3 (coupling) combined with finite per-reference capacity. Priority can be statutory, collateral-based, or seniority-based depending on substrate.
+
+\item[Closure-failure detector.] Any observable that trips when the ledger cannot reach a closed state within the grace window. Examples: innovation variance in an LPC polynomial (Wolves instrument), Euler characteristic $\chi(G)$ of a settlement graph, ratio of epistemic loans to total postings (ELR), entropy production rate in a thermodynamic cycle. Substrate-specific; all are instances of "can the ledger close?"
+
+\end{description}
+
+\section{Siting TCA in the Algebraic Hierarchy}
+
+TCA is defined in relation to two sibling theories.
+
+\paragraph{Classical closure algebra (synchronous limit).} Take the limit $t_R - t_L \to 0$ for every event: posting and settlement occur at the same instant. The monotone-time axiom becomes vacuous (no interval exists for postings to be added over); the bilateral axiom reduces to the requirement that the operation's output belong to the carrier set. TCA collapses to classical closure algebra. Group theory, ring theory, field theory, and the topological notion of closure all live in this limit. Classical closure algebra is TCA at $t = 0$ across all events.
+
+\paragraph{Topology (frozen projection).} Fix the ledger $\mathcal{L}(t)$ at a single time $t$ and ask about the \emph{shape} of the closure relations present at that instant. Open items become holes; closed events become filled cells; the counterparty graph has vertices in $R$ and edges in the closed-events relation. Topological invariants — Euler characteristic $\chi$, fundamental group $\pi_1$, homology $H_n$ — count closure structures on the frozen ledger. Topology is TCA projected onto a single time slice. The settlement-graph theorem $\chi(G) = 1$ under dollar unipolarity\footnote{Venugopal, R.\ (2026). \emph{Sovereign Stress as Geometry: $\chi(G)=1$ Under Dollar Unipolarity.} Zenodo. Lean~4 with 46 Z3 UNSAT certificates. The theorem is proved on a time slice of the FX settlement ledger; its geopolitical implication follows from what postings would have to be made to change the invariant, i.e., from re-engaging TCA with $t > 0$.} is a topological invariant of a TCA structure frozen at the present.
+
+\paragraph{Noether's theorem (the bridge).} Noether\footnote{Noether, E.\ (1918). ``Invariante Variationsprobleme.'' \emph{Nachr.\ D.\ König.\ Gesellsch.\ D.\ Wiss.\ Zu Göttingen, Math-phys.\ Klasse} 235--257. Every continuous symmetry of a physical action yields a conservation law.} proved that every continuous symmetry of a physical action yields a conservation law. In TCA vocabulary: every continuous symmetry selects a substrate on which classical-closure machinery is valid for a temporal-closure problem, and the conservation law is the closure condition on that substrate. Physics is therefore a family of TCA instances indexed by the symmetries of the action; each named conservation law is a TCA on its own substrate.
+
+\section{Named Instances}
+
+The following are TCA instances on distinct substrates. In each case, the substrate $(S, R)$ and the posting structure can be read off the discipline's canonical setup.
+
+\begin{adjustbox}{max width=\textwidth}
+\begin{tabular}{@{}llll@{}}
+\toprule
+\textbf{Instance} & \textbf{Resource $S$} & \textbf{References $R$} & \textbf{Closure identity} \\
+\midrule
+Meluhha cargo-tag & goods & sender, receiver & consignment $=$ receipt \\
+Pacioli accounting & value & accounts & assets $=$ liabilities $+$ equity \\
+Kirchhoff current law & charge & circuit nodes & $\sum I_{\text{in}} = \sum I_{\text{out}}$ \\
+Kirchhoff voltage law & potential & closed loops & $\sum V = 0$ around loop \\
+Thermodynamics (1st) & energy & system, surroundings & $dU = dQ - dW$ \\
+Phillips hydraulic & water & tanks, valves & inflow $=$ outflow per tank \\
+Settlement topology & currency liquidity & asset classes & $\chi(G) = 1$ under unipolarity \\
+Operations research & constraint slack & constraints, variables & primal-dual duality \\
+Control theory & state error & reference, plant & error $\to 0$ closure \\
+Information theory & bits & source, receiver & channel capacity absorbs rate \\
+TSF & adjustment-relevant info & witnessed agents & admissible compression \\
+\bottomrule
+\end{tabular}
+\end{adjustbox}
+
+\bigskip
+
+Each row can be recovered from the general TCA definition by fixing the substrate and reading the discipline's foundational identity as the closure condition on that substrate. The converse claim — that each discipline's theorems can be \emph{derived} from the general definition — is stronger and is demonstrated per-discipline in the application papers.
+
+\section{Relation to the Temporal Stability Framework}
+
+The Temporal Stability Framework\footnote{Venugopal, R.\ (2026). \emph{Temporal Stability Framework: Constraints Theory for Human Systems.} Zenodo. Axiomatic basis: bounded cognition, irreversible time, finite externalization capacity. Lean-verified Temporal Stability Theorem.} is the TCA instance on the cognitive-institutional substrate. Its three axioms reduce as follows: TSF Axiom~2 (irreversible time) is Theorem~1 of the present paper. TSF Axiom~3 (finite externalization capacity) is Theorem~2. TSF Axiom~1 (bounded cognition) remains primitive at the TSF level because it is a statement about the agents who maintain the ledger, which TCA does not take a position on. In the reduced system, TCA's two axioms plus TSF's bounded cognition suffice to regenerate TSF's Temporal Stability Theorem and its derived observables (ELR, LSSC, FTSR, witnessing).
+
+The TSF Lean proof survives intact as a proof within a conservative extension of the TCA axiom system.
+
+\section{Open Questions}
+
+Three questions are explicitly open.
+
+\emph{Does TCA have a category-theoretic formulation?} A natural candidate is the category whose objects are substrates and whose morphisms are closure-preserving maps. Composition would correspond to transitive closure across substrates (e.g., goods settling against currency settling against liquidity). The formulation is deferred pending a worked case.
+
+\emph{What is the minimal axiom count?} The present paper uses two axioms (DE, monotone time). The monotone-time axiom might itself be derivable from DE by a suitable definition of \emph{posting}; if so, the theory reduces to a single axiom. The derivation is non-trivial because "once posted, not removed" is a statement about the ledger's dynamics that DE alone does not obviously force.
+
+\emph{How should continuous postings be handled?} The present treatment is discrete: individual events post, match, close. Physical substrates (fluid flow, continuous charge flow, heat diffusion) post continuously. A differential form of TCA with $d\mathcal{L}/dt$ as the primitive rate is needed for rigorous engagement with thermodynamics and electromagnetics, and is deferred.
+
+\section{Summary}
+
+Temporal Closure Algebra is defined by two axioms — bilateral double-entry and monotone time — on a substrate $(S, R)$ with a ledger $\mathcal{L}: T \to 2^{\text{postings}}$. The origin $t = 0$ is the only free parameter. Irreversibility, finite externalization, coupling, and default are theorems of the definition. Open items, grace windows, witnessing, adjustability, shadow prices, and priority orders are derived structure. The theory is sibling to classical closure algebra (which is the synchronous limit) and to topology (which is the frozen-time projection), and is linked to physics by Noether's theorem. Named instances include thermodynamics, Kirchhoff's laws, Pacioli accounting, Phillips macroeconomics, Meluhha metrology, settlement topology, operations research, control theory, information theory, and TSF. In each case, the discipline's foundational identity is the closure condition on that discipline's substrate.
+
+The paper is a formal definition, not a result paper. Each named instance is a candidate for a worked derivation in a follow-up paper. The complete mapping of the corpus to TCA instances is the program of Third Buyer Advisory going forward.
+
+\end{document}
