@@ -7,6 +7,6 @@ build/
 *.aux
 *.out
 *.toc
-.DS_Store
 *.pdf
-pdfa.xmpi
+*.xmpi
+.DS_Store
