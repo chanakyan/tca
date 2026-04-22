@@ -1,8 +1,37 @@
 #!/usr/bin/env zsh
 # Pre-commit hook for TCA.
-# Gate: Lean must build with no errors.
+# Gates: BSD-2 header → Lean build → sorry check → certificate → no markdown
 setopt NO_UNSET
 fail=0
+
+# === Gate 1: BSD-2-Clause header =============================================
+
+staged_all=$(git diff --cached --name-only --diff-filter=ACM -- '*.lean' '*.tex' '*.fsx')
+
+if [[ -n "$staged_all" ]]; then
+    for f in ${(f)staged_all}; do
+        [[ "$f" == proof/certs/* ]] && continue
+        if ! head -5 "$f" | grep -q 'BSD-2-Clause\|SPDX-License-Identifier'; then
+            # Lean files use /- -/ comments, check for license there
+            if ! head -10 "$f" | grep -qi 'license\|BSD\|SPDX'; then
+                echo "FAIL: $f -- missing license header"
+                fail=1
+            fi
+        fi
+    done
+fi
+
+# === Gate 2: No markdown ====================================================
+
+staged_md=$(git diff --cached --name-only --diff-filter=ACM -- '*.md')
+if [[ -n "$staged_md" ]]; then
+    echo "FAIL: .md files detected. LaTeX only."
+    fail=1
+fi
+
+[[ $fail -ne 0 ]] && { echo "Commit blocked."; exit 1; }
+
+# === Gate 3: Lean build =====================================================
 
 staged_lean=$(git diff --cached --name-only --diff-filter=ACM -- '*.lean')
 
@@ -16,30 +45,49 @@ if [[ -n "$staged_lean" ]]; then
     fi
     echo "LEAN: build passed."
 
-    # Generate certificate
+    # === Gate 4: Zero sorry in code ==========================================
+
+    echo "LEAN: checking for sorry..."
+    for f in ${(f)staged_lean}; do
+        # grep for sorry that is NOT in a comment (-- or /- -/)
+        sorry_count=$(grep -n "sorry" "$f" | grep -v "^\s*--" | grep -v "/\-" | grep -v "No.*sorry\|ZERO.*sorry\|no.*sorry\|STATUS\|Remaining\|Expected\|zero.sorry" | grep -v "^\s*\*\|^\s*#" | wc -l | tr -d ' ')
+        if [[ $sorry_count -gt 0 ]]; then
+            echo "FAIL: $f has $sorry_count sorry in code."
+            grep -n "sorry" "$f" | grep -v "^\s*--" | grep -v "/\-" | grep -v "No.*sorry\|ZERO.*sorry\|no.*sorry\|STATUS\|Remaining\|Expected\|zero.sorry" | grep -v "^\s*\*\|^\s*#" | head -5
+            fail=1
+        fi
+    done
+
+    [[ $fail -ne 0 ]] && { echo "Commit blocked. Kill the sorry."; exit 1; }
+
+    # === Gate 5: Certificate (check for sorryAx) =============================
+
     echo "LEAN: generating certificate..."
     cert_out=$(lake env lean PrintAxioms.lean 2>&1 | grep "depends on")
     if [[ -n "$cert_out" ]]; then
+        if echo "$cert_out" | grep -q "sorryAx"; then
+            echo "FAIL: sorryAx found in axiom dependencies."
+            echo "$cert_out" | grep "sorryAx"
+            exit 1
+        fi
+
         ts=$(date -u +%Y-%m-%dT%H:%M:%SZ)
         hash=$(git rev-parse --short HEAD 2>/dev/null || echo "pre-commit")
         cert_file="proof/certs/lean_${ts//:/-}.txt"
         mkdir -p proof/certs
+
         echo "LEAN PROOF CERTIFICATE" > "$cert_file"
         echo "======================" >> "$cert_file"
         echo "timestamp: $ts" >> "$cert_file"
         echo "commit:    $hash" >> "$cert_file"
+        echo "sorry:     0" >> "$cert_file"
+        echo "sorryAx:   0" >> "$cert_file"
         echo "" >> "$cert_file"
         echo "$cert_out" >> "$cert_file"
-        git add proof/certs/ 2>/dev/null
-        echo "LEAN: certificate staged."
-    fi
-fi
 
-# LaTeX: no markdown
-staged_tex=$(git diff --cached --name-only --diff-filter=ACM -- '*.md')
-if [[ -n "$staged_tex" ]]; then
-    echo "FAIL: .md files detected. LaTeX only."
-    exit 1
+        git add proof/certs/ 2>/dev/null
+        echo "LEAN: zero sorry, zero sorryAx. Certificate staged."
+    fi
 fi
 
 echo "All pre-commit checks passed."
