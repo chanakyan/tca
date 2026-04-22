@@ -2,6 +2,7 @@
 import TemporalClosureAlgebra
 import QuantumAsTCA
 import SpacetimeAsTCA
+import InformationParadox
 
 -- TCA
 #print axioms TCA.Theorem_Irreversibility_of_Closure
@@ -28,3 +29,10 @@ import SpacetimeAsTCA
 #print axioms SpacetimeAsTCA.Theorem_Completed_Geodesic_Irreversible
 #print axioms SpacetimeAsTCA.Theorem_Singularity_Is_Permanent_Default
 #print axioms SpacetimeAsTCA.Theorem_BlackHole_Events_Are_Coupled
+
+-- Information Paradox
+#print axioms InformationParadox.IP1_monotone_time_per_substrate
+#print axioms InformationParadox.IP2_spacetime_open_independent_of_quantum
+#print axioms InformationParadox.IP3_spacetime_information_persists
+#print axioms InformationParadox.IP4_information_never_lost
+#print axioms InformationParadox.evaporation_dichotomy

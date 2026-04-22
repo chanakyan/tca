@@ -1,0 +1,30 @@
+LEAN PROOF CERTIFICATE
+======================
+timestamp: 2026-04-22T13:13:33Z
+commit:    13d8ddf
+sorry:     0
+sorryAx:   0
+
+'TCA.Theorem_Irreversibility_of_Closure' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TCA.Theorem_Coupling' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TCA.Theorem_Default_as_Limit' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TCA.TSF_Axiom_2_as_TCA_Theorem' depends on axioms: [propext, Classical.choice, Quot.sound]
+'QuantumAsTCA.Theorem_Unitary_Evolution_Has_No_Closures' depends on axioms: [propext, Classical.choice, Quot.sound]
+'QuantumAsTCA.Theorem_PVM_Posts_Both_Sides' depends on axioms: [propext, Classical.choice, Quot.sound]
+'QuantumAsTCA.Theorem_PVM_Satisfies_DoubleEntry' depends on axioms: [propext, Classical.choice, Quot.sound]
+'QuantumAsTCA.Theorem_Measurement_Ledger_Is_Monotone' depends on axioms: [propext, Classical.choice, Quot.sound]
+'QuantumAsTCA.Theorem_Measurement_Is_Irreversible' depends on axioms: [propext, Classical.choice, Quot.sound]
+'QuantumAsTCA.Theorem_Entanglement_Is_Shared_Preparation_Coupling' depends on axioms: [propext,
+'QuantumAsTCA.Corollary_Measurement_And_Entanglement' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TCA.Theorem_Finite_Externalization' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TCA.synchronous_closure_collapse' depends on axioms: [propext, Classical.choice, Quot.sound]
+'SpacetimeAsTCA.Theorem_Geodesic_Incompleteness_Is_Default' depends on axioms: [propext, Classical.choice, Quot.sound]
+'SpacetimeAsTCA.Theorem_Default_Persists' depends on axioms: [propext, Classical.choice, Quot.sound]
+'SpacetimeAsTCA.Theorem_Completed_Geodesic_Irreversible' depends on axioms: [propext, Classical.choice, Quot.sound]
+'SpacetimeAsTCA.Theorem_Singularity_Is_Permanent_Default' depends on axioms: [propext, Classical.choice, Quot.sound]
+'SpacetimeAsTCA.Theorem_BlackHole_Events_Are_Coupled' depends on axioms: [propext, Classical.choice, Quot.sound]
+'InformationParadox.IP1_monotone_time_per_substrate' depends on axioms: [propext, Classical.choice, Quot.sound]
+'InformationParadox.IP2_spacetime_open_independent_of_quantum' depends on axioms: [propext,
+'InformationParadox.IP3_spacetime_information_persists' depends on axioms: [propext, Classical.choice, Quot.sound]
+'InformationParadox.IP4_information_never_lost' depends on axioms: [propext, Classical.choice, Quot.sound]
+'InformationParadox.evaporation_dichotomy' depends on axioms: [propext, Classical.choice, Quot.sound]
