@@ -8,3 +8,5 @@ build/
 *.out
 *.toc
 .DS_Store
+*.pdf
+pdfa.xmpi
