@@ -1,5 +1,7 @@
+-- SPDX-License-Identifier: BSD-2-Clause
 import TemporalClosureAlgebra
 import QuantumAsTCA
+import SpacetimeAsTCA
 
 -- TCA
 #print axioms TCA.Theorem_Irreversibility_of_Closure
@@ -16,6 +18,13 @@ import QuantumAsTCA
 #print axioms QuantumAsTCA.Theorem_Entanglement_Is_Shared_Preparation_Coupling
 #print axioms QuantumAsTCA.Corollary_Measurement_And_Entanglement
 
--- Previously had sorry — now clean
+-- Resolved (were deferred, now fully proved)
 #print axioms TCA.Theorem_Finite_Externalization
 #print axioms TCA.synchronous_closure_collapse
+
+-- Spacetime
+#print axioms SpacetimeAsTCA.Theorem_Geodesic_Incompleteness_Is_Default
+#print axioms SpacetimeAsTCA.Theorem_Default_Persists
+#print axioms SpacetimeAsTCA.Theorem_Completed_Geodesic_Irreversible
+#print axioms SpacetimeAsTCA.Theorem_Singularity_Is_Permanent_Default
+#print axioms SpacetimeAsTCA.Theorem_BlackHole_Events_Are_Coupled
