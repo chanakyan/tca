@@ -4,6 +4,7 @@ import QuantumAsTCA
 import SpacetimeAsTCA
 import InformationParadox
 import EquityPremium
+import SubstrateConfusions
 
 -- TCA
 #print axioms TCA.Theorem_Irreversibility_of_Closure
@@ -44,3 +45,15 @@ import EquityPremium
 #print axioms EquityPremium.EP3_bond_settlement_irreversible
 #print axioms EquityPremium.EP4_equity_structural_default
 #print axioms EquityPremium.EP5_substrates_independent
+
+-- Substrate Confusions
+#print axioms SubstrateConfusions.substrates_independent
+#print axioms SubstrateConfusions.cross_substrate_independence
+#print axioms SubstrateConfusions.dichotomy
+#print axioms SubstrateConfusions.measurement_problem_dissolved
+#print axioms SubstrateConfusions.cosmological_constant_dissolved
+#print axioms SubstrateConfusions.baryon_asymmetry_is_open_items
+#print axioms SubstrateConfusions.dark_matter_is_substrate_asymmetry
+#print axioms SubstrateConfusions.wave_particle_two_substrates
+#print axioms SubstrateConfusions.hierarchy_is_capacity_ratio
+#print axioms SubstrateConfusions.zeno_is_rapid_closure
