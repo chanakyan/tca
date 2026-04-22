@@ -1,0 +1,17 @@
+import TemporalClosureAlgebra
+import QuantumAsTCA
+
+-- TCA
+#print axioms TCA.Theorem_Irreversibility_of_Closure
+#print axioms TCA.Theorem_Coupling
+#print axioms TCA.Theorem_Default_as_Limit
+#print axioms TCA.TSF_Axiom_2_as_TCA_Theorem
+
+-- Quantum v0.2
+#print axioms QuantumAsTCA.Theorem_Unitary_Evolution_Has_No_Closures
+#print axioms QuantumAsTCA.Theorem_PVM_Posts_Both_Sides
+#print axioms QuantumAsTCA.Theorem_PVM_Satisfies_DoubleEntry
+#print axioms QuantumAsTCA.Theorem_Measurement_Ledger_Is_Monotone
+#print axioms QuantumAsTCA.Theorem_Measurement_Is_Irreversible
+#print axioms QuantumAsTCA.Theorem_Entanglement_Is_Shared_Preparation_Coupling
+#print axioms QuantumAsTCA.Corollary_Measurement_And_Entanglement

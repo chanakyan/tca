@@ -1,7 +1,7 @@
 name = "TCA"
-version = "0.1.0"
-keywords = ["math", "algebra", "temporal"]
-defaultTargets = ["TCA"]
+version = "0.2.0"
+keywords = ["math", "algebra", "temporal", "quantum"]
+defaultTargets = ["TemporalClosureAlgebra", "QuantumAsTCA"]
 
 [leanOptions]
 pp.unicode.fun = true

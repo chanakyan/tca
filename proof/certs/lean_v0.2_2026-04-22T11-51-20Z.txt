@@ -1,0 +1,36 @@
+LEAN PROOF CERTIFICATE v0.2
+============================
+timestamp: 2026-04-22T11:51:20Z
+commit:    aaad46b
+toolchain: Lean 4.29.1 + mathlib v4.29.1
+build:     2356 jobs, 0 errors
+
+=== TCA (4 fully proved) ===
+'TCA.Theorem_Irreversibility_of_Closure' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TCA.Theorem_Coupling' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TCA.Theorem_Default_as_Limit' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TCA.TSF_Axiom_2_as_TCA_Theorem' depends on axioms: [propext, Classical.choice, Quot.sound]
+'QuantumAsTCA.Theorem_Unitary_Evolution_Has_No_Closures' depends on axioms: [propext, Classical.choice, Quot.sound]
+'QuantumAsTCA.Theorem_PVM_Posts_Both_Sides' depends on axioms: [propext, Classical.choice, Quot.sound]
+'QuantumAsTCA.Theorem_PVM_Satisfies_DoubleEntry' depends on axioms: [propext, Classical.choice, Quot.sound]
+'QuantumAsTCA.Theorem_Measurement_Ledger_Is_Monotone' depends on axioms: [propext, Classical.choice, Quot.sound]
+'QuantumAsTCA.Theorem_Measurement_Is_Irreversible' depends on axioms: [propext, Classical.choice, Quot.sound]
+'QuantumAsTCA.Theorem_Entanglement_Is_Shared_Preparation_Coupling' depends on axioms: [propext,
+'QuantumAsTCA.Corollary_Measurement_And_Entanglement' depends on axioms: [propext, Classical.choice, Quot.sound]
+
+=== QuantumAsTCA v0.2 (7 fully proved, 0 sorry) ===
+'QuantumAsTCA.Theorem_Unitary_Evolution_Has_No_Closures' depends on axioms: [propext, Classical.choice, Quot.sound]
+'QuantumAsTCA.Theorem_PVM_Posts_Both_Sides' depends on axioms: [propext, Classical.choice, Quot.sound]
+'QuantumAsTCA.Theorem_PVM_Satisfies_DoubleEntry' depends on axioms: [propext, Classical.choice, Quot.sound]
+'QuantumAsTCA.Theorem_Measurement_Ledger_Is_Monotone' depends on axioms: [propext, Classical.choice, Quot.sound]
+'QuantumAsTCA.Theorem_Measurement_Is_Irreversible' depends on axioms: [propext, Classical.choice, Quot.sound]
+'QuantumAsTCA.Theorem_Entanglement_Is_Shared_Preparation_Coupling' depends on axioms: [propext,
+'QuantumAsTCA.Corollary_Measurement_And_Entanglement' depends on axioms: [propext, Classical.choice, Quot.sound]
+
+=== SUMMARY ===
+TCA:          4 clean + 2 sorry (existing corners) = 6
+QuantumAsTCA: 7 clean + 0 sorry = 7
+Total:        11 clean theorems
+New in v0.2:  Q5 Entanglement_Is_Shared_Preparation_Coupling
+              Corollary_Measurement_And_Entanglement
+Axiom base:   propext, Classical.choice, Quot.sound

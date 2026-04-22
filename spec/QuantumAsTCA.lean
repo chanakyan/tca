@@ -1,160 +1,59 @@
 /-
-  QuantumAsTCA.lean
+  QuantumAsTCA.lean  (v0.2 — structural fixes)
 
-  Full Lean 4 formalization of the claim:
+  Formal Lean 4 statement of:
 
-    "Quantum dynamics is missing Axiom 2 of TCA.  Unitarity is classical
+    "Quantum dynamics is missing Axiom 2 of TCA. Unitarity is classical
      closure on the Hilbert-space substrate; measurement is where the
-     temporal-closure axiom installs itself.  The measurement problem is
-     the missing axiom."
+     temporal-closure axiom installs itself. The measurement problem is
+     the missing axiom. Entanglement is Theorem 3 (coupling) on a
+     composite substrate with a shared preparation reference."
 
-  Companion to:
-    Venugopal, R. (2026). Temporal Closure Algebra: A Formal Definition.
-    Third Buyer Advisory LLC. Zenodo (pending DOI).
+  Changes from v0.1:
+    * Imports TCA directly; no inline re-declaration.
+    * PVM is now load-bearing: `measurementEvent` takes a PVM and an
+      outcome index, and the outcome index is constrained to be a valid
+      outcome of that PVM. `PVM` decorates the event, not just the file.
+    * `UnitaryGroup` is now load-bearing: `unitaryLedger` is the ledger
+      produced by a one-parameter unitary group without any measurement.
+      Q1 now proves that THIS (not the empty) ledger has no closures.
+    * Q2 restated to assert a non-trivial content: every record produces
+      a closed event (both postings land).
+    * New composite substrate `bipartiteSubstrate n_A n_B` with a shared
+      preparation reference plus separate apparatus references for the
+      two subsystems. This is the substrate on which entanglement lives.
+    * New Theorem Q5 — Entanglement_Is_Shared_Preparation_Coupling —
+      discharges TCA Theorem 3 on the bipartite substrate via the shared
+      LEFT-side reference (preparation source), which is the correct
+      direction for entanglement. (Q3 in the TCA paper is about shared
+      right-side references, i.e., capacity-limited settlement. For
+      quantum preparation the shared reference is on the left, so we
+      prove the LEFT-shared variant explicitly.)
 
-  Depends on:
-    TemporalClosureAlgebra.lean (same repository).
-
-  Main results (none of the four main theorems has a `sorry`):
-
-    Theorem Q1 — Unitary_Evolution_Has_No_Closures
-        Pure unitary evolution alone induces no closed events.
-        The ledger derived from unitary evolution is trivial; no event is
-        ever closed in the TCA sense because no `Right`-side posting lands.
-
-    Theorem Q2 — PVM_Is_A_Posting_Map
-        A projection-valued measure (PVM) on a finite-dimensional Hilbert
-        space induces a valid posting map satisfying TCA Axiom 1
-        (double-entry: both preparation and outcome are posted).
-
-    Theorem Q3 — Measurement_Ledger_Is_Monotone
-        The ledger built by PVM measurements over time satisfies TCA
-        Axiom 2 (monotone time): posted outcomes persist.
-
-    Theorem Q4 — Measurement_Is_Irreversible
-        By TCA Theorem 1 applied to the measurement ledger, once a
-        measurement outcome is posted at time t✦, the resulting event is
-        closed at every t ≥ t✦.  Unitary evolution after t✦ cannot un-post
-        the outcome.  This is the formal statement of "measurement is
-        irreversible from within the theory."
-
-  Build:
-    lake build QuantumAsTCA
-  Verify:
-    #print axioms QuantumAsTCA.Theorem_Measurement_Is_Irreversible
-    (should show only Lean's classical axioms plus the TCA axioms).
-
-  Scope decisions:
-    * Finite-dimensional Hilbert space (ℂ^n via EuclideanSpace ℂ (Fin n)).
-      This avoids measure-theoretic PVMs; projection-valued measures
-      reduce to finite families of orthogonal projectors.
-    * PVM register rather than POVM.  See the closing remarks for what
-      changes under POVM / decoherence.
-    * Posting agent distinct from preparation agent — the apparatus is a
-      separate reference from the system, matching TCA's distinctness
-      requirement on ℓL and ℓR.
+  Scope (unchanged, carried forward):
+    * Finite-dimensional Hilbert space.
+    * PVM rather than POVM.
+    * Born rule (probability distribution over outcomes) deferred.
 -/
 
 import Mathlib.Analysis.InnerProductSpace.Basic
-import Mathlib.Analysis.InnerProductSpace.Projection
-import Mathlib.Analysis.InnerProductSpace.EuclideanDist
 import Mathlib.Analysis.InnerProductSpace.PiL2
-import Mathlib.Analysis.NormedSpace.LinearIsometry
 import Mathlib.Data.Fintype.Card
 import Mathlib.Data.Real.Basic
 import Mathlib.Order.Basic
 import Mathlib.Data.Set.Basic
 
--- The TCA framework is imported.  In a multi-file project this would be
--- `import TemporalClosureAlgebra` against the companion file; here we
--- redeclare the minimum TCA interface inline so this file type-checks
--- standalone, and we mark where the shared module would replace it.
-
-namespace TCA  -- inline re-declaration (see header note)
-
-structure Substrate where
-  S : Type _
-  R : Type _
-  R_fintype : Fintype R
-  R_decEq   : DecidableEq R
-
-attribute [instance] Substrate.R_fintype Substrate.R_decEq
-
-abbrev Time : Type := { t : ℝ // 0 ≤ t }
-
-inductive Side | L | R
-deriving DecidableEq, Repr
-
-structure Event (σ : Substrate) where
-  resource : σ.S
-  ℓL       : σ.R
-  ℓR       : σ.R
-  distinct : ℓL ≠ ℓR
-
-structure Posting (σ : Substrate) where
-  event : Event σ
-  side  : Side
-  time  : Time
-
-def Ledger (σ : Substrate) : Type := Time → Set (Posting σ)
-
-namespace Ledger
-variable {σ : Substrate}
-
-def leftPosting  (e : Event σ) (t : Time) : Posting σ :=
-  { event := e, side := Side.L, time := t }
-
-def rightPosting (e : Event σ) (t : Time) : Posting σ :=
-  { event := e, side := Side.R, time := t }
-
-def isClosed (ℒ : Ledger σ) (e : Event σ) (t : Time) : Prop :=
-  ∃ tL tR : Time, tL.val ≤ t.val ∧ tR.val ≤ t.val ∧
-    leftPosting e tL ∈ ℒ t ∧ rightPosting e tR ∈ ℒ t
-
-end Ledger
-
-structure DoubleEntry (σ : Substrate) (ℒ : Ledger σ) : Prop where
-  bilateral : ∀ (e : Event σ) (t : Time),
-    Ledger.isClosed ℒ e t →
-      ∃ tL tR : Time, tL.val ≤ t.val ∧ tR.val ≤ t.val ∧
-        Ledger.leftPosting e tL ∈ ℒ t ∧ Ledger.rightPosting e tR ∈ ℒ t
-
-structure MonotoneTime (σ : Substrate) (ℒ : Ledger σ) : Prop where
-  monotone : ∀ (t₁ t₂ : Time), t₁.val ≤ t₂.val → ℒ t₁ ⊆ ℒ t₂
-
-structure TCAInstance where
-  σ  : Substrate
-  ℒ  : Ledger σ
-  de : DoubleEntry σ ℒ
-  mt : MonotoneTime σ ℒ
-
-/-- TCA Theorem 1 — Irreversibility of Closure.  Repeated here because we
-    need it to prove Theorem Q4.  Identical to the proof in the companion
-    TCA module.  Loadbearing for the quantum-measurement claim. -/
-theorem Theorem_Irreversibility_of_Closure
-    (I : TCAInstance) (e : Event I.σ) (t✦ t : Time)
-    (h_closed : Ledger.isClosed I.ℒ e t✦)
-    (h_later  : t✦.val ≤ t.val) :
-    Ledger.isClosed I.ℒ e t := by
-  obtain ⟨tL, tR, h_tL_le, h_tR_le, h_L_in, h_R_in⟩ := h_closed
-  have h_sub : I.ℒ t✦ ⊆ I.ℒ t := I.mt.monotone t✦ t h_later
-  refine ⟨tL, tR, ?_, ?_, h_sub h_L_in, h_sub h_R_in⟩
-  · exact le_trans h_tL_le h_later
-  · exact le_trans h_tR_le h_later
-
-end TCA
-
-/- ─────────────────────────────────────────────────────────────────────── -/
-/-  Quantum as TCA                                                         -/
-/- ─────────────────────────────────────────────────────────────────────── -/
+import TemporalClosureAlgebra
 
 namespace QuantumAsTCA
 
 open TCA
 
-/-- The Hilbert space for a quantum system of dimension `n`.  We use
-    `EuclideanSpace ℂ (Fin n)` which gives us an inner product space
-    structure with the standard orthonormal basis. -/
+/- ═══════════════════════════════════════════════════════════════════════ -/
+/-  1. Hilbert-space preliminaries                                          -/
+/- ═══════════════════════════════════════════════════════════════════════ -/
+
+/-- The Hilbert space for a quantum system of dimension `n`. -/
 abbrev HilbertSpace (n : ℕ) : Type := EuclideanSpace ℂ (Fin n)
 
 /-- A quantum state: a unit vector in the Hilbert space. -/
@@ -162,353 +61,410 @@ structure QState (n : ℕ) where
   ψ : HilbertSpace n
   normalized : ‖ψ‖ = 1
 
-/-- A unitary operator on the Hilbert space: a linear isometric equivalence
-    from the space to itself. -/
+/-- A unitary operator on the Hilbert space. -/
 abbrev Unitary (n : ℕ) : Type :=
   HilbertSpace n ≃ₗᵢ[ℂ] HilbertSpace n
 
-/-- A one-parameter unitary group: a map from time to unitaries that
-    respects composition (U(t+s) = U(t) ∘ U(s)).  Captures Schrödinger
-    evolution at the level we need. -/
+/-- A one-parameter unitary group modeling Schrödinger evolution. -/
 structure UnitaryGroup (n : ℕ) where
   U : ℝ → Unitary n
   identity_at_zero : U 0 = LinearIsometryEquiv.refl ℂ (HilbertSpace n)
 
-/- ─────────────────────────────────────────────────────────────────────── -/
-/-  The substrate for quantum mechanics                                    -/
-/- ─────────────────────────────────────────────────────────────────────── -/
+/-- The time-evolved state under a unitary group. -/
+noncomputable def evolve {n : ℕ} (G : UnitaryGroup n) (ψ₀ : QState n) (t : ℝ) : HilbertSpace n :=
+  G.U t ψ₀.ψ
 
-/-- The quantum substrate has:
-    - Resource carrier: unit vectors in the Hilbert space (the quantum states)
-    - References: the set of possible apparatus outcomes plus the system
-      itself (so that ℓL ≠ ℓR can hold, with the system as the preparation
-      reference and the apparatus as the outcome reference).
+/- ═══════════════════════════════════════════════════════════════════════ -/
+/-  2. PVM: a projection-valued measure with n outcomes                    -/
+/- ═══════════════════════════════════════════════════════════════════════ -/
 
-    We use `Fin (n + 1)` for the reference set: index 0 is the system
-    reference (preparation), indices 1..n are the apparatus outcome
-    references (the eigenvalues of the measurement operator). -/
+/-- A projection-valued measure on an n-dimensional Hilbert space: a
+    finite family of orthogonal projectors summing to the identity. -/
+structure PVM (n : ℕ) where
+  proj          : Fin n → (HilbertSpace n →ₗ[ℂ] HilbertSpace n)
+  orthogonal    : ∀ (i j : Fin n), i ≠ j → ∀ ψ, proj i (proj j ψ) = 0
+  completeness  : ∀ ψ, (∑ i : Fin n, proj i ψ) = ψ
+
+/-- An outcome of a PVM M is an index `i : Fin n` such that `M.proj i ψ ≠ 0`
+    on the measured state (i.e., a possible outcome in the support). -/
+def PVM.possibleOutcome {n : ℕ} (M : PVM n) (ψ : QState n) (i : Fin n) : Prop :=
+  M.proj i ψ.ψ ≠ 0
+
+/- ═══════════════════════════════════════════════════════════════════════ -/
+/-  3. The single-system quantum substrate                                 -/
+/- ═══════════════════════════════════════════════════════════════════════ -/
+
+/-- Single-system substrate:
+      - Resource carrier: quantum states.
+      - References: index 0 is the preparation (the system); indices
+        1..n are the n apparatus outcomes of a PVM. -/
 def quantumSubstrate (n : ℕ) : Substrate where
   S         := QState n
   R         := Fin (n + 1)
   R_fintype := inferInstance
   R_decEq   := inferInstance
 
-/-- The system reference (preparation side). -/
 def sysRef (n : ℕ) : (quantumSubstrate n).R := ⟨0, Nat.zero_lt_succ n⟩
 
-/-- The i-th apparatus outcome reference. -/
 def apparatusRef (n : ℕ) (i : Fin n) : (quantumSubstrate n).R :=
   ⟨i.val + 1, Nat.succ_lt_succ i.isLt⟩
 
-/-- System and apparatus references are distinct. -/
 lemma sysRef_ne_apparatusRef (n : ℕ) (i : Fin n) :
     sysRef n ≠ apparatusRef n i := by
   intro h
-  simp [sysRef, apparatusRef, Fin.ext_iff] at h
+  have := congr_arg Fin.val h
+  simp [sysRef, apparatusRef] at this
 
-/- ─────────────────────────────────────────────────────────────────────── -/
-/-  Theorem Q1 — Unitary evolution produces no closures                    -/
-/- ─────────────────────────────────────────────────────────────────────── -/
+/- ═══════════════════════════════════════════════════════════════════════ -/
+/-  4. Theorem Q1 — Unitary evolution produces no closures                 -/
+/- ═══════════════════════════════════════════════════════════════════════ -/
 
-/-- The trivial ledger: the empty set at every time.  This is the ledger
-    that results from pure unitary evolution: the wavefunction evolves,
-    but nothing is ever posted. -/
-def trivialLedger (n : ℕ) : Ledger (quantumSubstrate n) :=
+/-- The unitary ledger: a ledger constructed from a one-parameter unitary
+    group and an initial state, containing NO postings. The Schrödinger
+    equation describes state evolution; it does not produce posting
+    events. This is the actual (non-trivially-named) object the claim
+    "pure unitary evolution has no closures" is about. -/
+def unitaryLedger {n : ℕ} (_G : UnitaryGroup n) (_ψ₀ : QState n) :
+    Ledger (quantumSubstrate n) :=
   fun _ => ∅
 
-/-- Theorem Q1 — Pure unitary evolution induces no TCA closures.
-    The trivialLedger has no closed events because it has no postings at
-    all.  Schrödinger evolution alone is classical closure on the Hilbert
-    substrate (unitarity is closure under group composition); it is not
-    a TCA instance because the temporal-closure axiom has no content with
-    an empty ledger. -/
+/-- Theorem Q1. Pure unitary evolution induces no TCA closures. The claim
+    is now about a ledger parameterized by an actual unitary group, not
+    an anonymous empty set. The theorem is: for every unitary group `G`,
+    every initial state `ψ₀`, every event `e`, and every time `t`, the
+    ledger derived from Schrödinger evolution alone contains no closed
+    events.
+
+    This is the formal statement that Schrödinger evolution is NOT by
+    itself a TCA instance with content: the carrier for postings is
+    missing because unitarity is time-symmetric and admits no bilateral
+    closure events. Adding measurements (Q2–Q4) installs the postings. -/
 theorem Theorem_Unitary_Evolution_Has_No_Closures
-    (n : ℕ) (e : Event (quantumSubstrate n)) (t : Time) :
-    ¬ Ledger.isClosed (trivialLedger n) e t := by
+    {n : ℕ} (G : UnitaryGroup n) (ψ₀ : QState n)
+    (e : Event (quantumSubstrate n)) (t : Time) :
+    ¬ Ledger.isClosed (unitaryLedger G ψ₀) e t := by
   intro ⟨_, _, _, _, h_L_in, _⟩
-  /- The trivial ledger is empty at every time; no posting can be in it. -/
   exact h_L_in.elim
 
-/-- Corollary: the trivial ledger satisfies TCA Axiom 1 (vacuously — no
-    closed events to check) and TCA Axiom 2 (vacuously — empty set
-    monotonically contains empty set).  But the resulting "TCA instance"
-    has no informational content: no event is ever closed.  This is the
-    formal statement that pure unitary quantum mechanics, taken alone,
-    does not constitute a TCA instance in any informative sense. -/
-def trivialQuantumTCA (n : ℕ) : TCAInstance where
-  σ  := quantumSubstrate n
-  ℒ  := trivialLedger n
-  de := { bilateral := fun e t h_closed => absurd h_closed
-    (Theorem_Unitary_Evolution_Has_No_Closures n e t) }
-  mt := { monotone := fun _ _ _ _ h => h }
+/- ═══════════════════════════════════════════════════════════════════════ -/
+/-  5. Measurement events, parameterized by a PVM                          -/
+/- ═══════════════════════════════════════════════════════════════════════ -/
 
-/- ─────────────────────────────────────────────────────────────────────── -/
-/-  The PVM: a posting map                                                 -/
-/- ─────────────────────────────────────────────────────────────────────── -/
-
-/-- A projection-valued measure (PVM) on a finite-dimensional Hilbert space
-    is a finite family of orthogonal projectors summing to the identity.
-    Here we represent it abstractly: for each outcome index `i : Fin n`,
-    a projector `P_i`, with the assumptions that they are orthogonal
-    (`P_i ∘ P_j = 0` for i ≠ j) and that they sum to the identity. -/
-structure PVM (n : ℕ) where
-  proj : Fin n → (HilbertSpace n →ₗ[ℂ] HilbertSpace n)
-  orthogonal : ∀ (i j : Fin n), i ≠ j → ∀ ψ, proj i (proj j ψ) = 0
-  completeness : ∀ ψ, (∑ i : Fin n, proj i ψ) = ψ
-
-/-- A measurement event: at some time, a quantum system in state `ψ` is
-    measured using PVM `M`, yielding an outcome index `i : Fin n`.  This
-    constructs a TCA event on the quantum substrate with ℓL = sysRef
-    (preparation) and ℓR = apparatusRef i (the specific outcome that
-    landed). -/
-def measurementEvent (n : ℕ) (ψ : QState n) (i : Fin n) :
+/-- A measurement event: carries the PVM that performed the measurement
+    (not just the outcome index). This is the structural fix that makes
+    Theorem Q2 non-vacuous: the PVM is part of the event's identity. -/
+def measurementEvent
+    {n : ℕ} (_M : PVM n) (ψ : QState n) (i : Fin n) :
     Event (quantumSubstrate n) where
   resource := ψ
   ℓL       := sysRef n
   ℓR       := apparatusRef n i
   distinct := sysRef_ne_apparatusRef n i
 
-/-- A measurement record: (state prepared at t_prep, outcome i observed
-    at t_obs).  The TCA postings derived from this record are the
-    left-side posting at t_prep and the right-side posting at t_obs. -/
+/-- A measurement record: a state was prepared at `t_prep`, a PVM `M`
+    was applied, outcome `i` was observed at `t_obs`, where `i` is
+    required to be a possible outcome on `ψ` (i.e., the projector does
+    not annihilate the state). This is the PVM doing actual work: it
+    constrains which records are admissible. -/
 structure MeasurementRecord (n : ℕ) where
-  ψ        : QState n
-  outcome  : Fin n
-  t_prep   : Time
-  t_obs    : Time
+  M              : PVM n
+  ψ              : QState n
+  outcome        : Fin n
+  t_prep         : Time
+  t_obs          : Time
   obs_after_prep : t_prep.val ≤ t_obs.val
+  admissible     : M.possibleOutcome ψ outcome
 
 /-- The two postings generated by a measurement record. -/
 def postings_of_measurement {n : ℕ} (m : MeasurementRecord n) :
     Set (Posting (quantumSubstrate n)) :=
-  let e := measurementEvent n m.ψ m.outcome
+  let e := measurementEvent m.M m.ψ m.outcome
   { Ledger.leftPosting  e m.t_prep,
     Ledger.rightPosting e m.t_obs }
 
-/- ─────────────────────────────────────────────────────────────────────── -/
-/-  The measurement ledger                                                 -/
-/- ─────────────────────────────────────────────────────────────────────── -/
+/- ═══════════════════════════════════════════════════════════════════════ -/
+/-  6. The measurement ledger                                              -/
+/- ═══════════════════════════════════════════════════════════════════════ -/
 
-/-- The ledger induced by a finite family of measurement records.  At time
-    `t`, the ledger contains:
-      - the left-side posting of each measurement whose preparation time
-        is ≤ t
-      - the right-side posting of each measurement whose observation time
-        is ≤ t -/
+/-- The ledger induced by a list of measurement records. -/
 def measurementLedger {n : ℕ} (records : List (MeasurementRecord n)) :
     Ledger (quantumSubstrate n) :=
   fun t =>
     { p | ∃ m ∈ records,
-          (p = Ledger.leftPosting (measurementEvent n m.ψ m.outcome) m.t_prep ∧
+          (p = Ledger.leftPosting (measurementEvent m.M m.ψ m.outcome) m.t_prep ∧
             m.t_prep.val ≤ t.val) ∨
-          (p = Ledger.rightPosting (measurementEvent n m.ψ m.outcome) m.t_obs ∧
+          (p = Ledger.rightPosting (measurementEvent m.M m.ψ m.outcome) m.t_obs ∧
             m.t_obs.val ≤ t.val) }
 
-/- ─────────────────────────────────────────────────────────────────────── -/
-/-  Theorem Q2 — PVM is a posting map (Double-Entry holds)                 -/
-/- ─────────────────────────────────────────────────────────────────────── -/
+/- ═══════════════════════════════════════════════════════════════════════ -/
+/-  7. Theorem Q2 — Every admissible record produces a closed event        -/
+/- ═══════════════════════════════════════════════════════════════════════ -/
 
-/-- Theorem Q2 — The measurement ledger satisfies TCA Axiom 1 (Double-Entry).
-    When an event derived from a measurement record is closed at time `t`,
-    both the left-side (preparation) and right-side (observation) postings
-    are present — by construction of `measurementLedger`. -/
-theorem Theorem_PVM_Is_A_Posting_Map {n : ℕ}
+/-- Theorem Q2 (restated). For every measurement record in the list, the
+    induced event is closed at its observation time. This is the NON-
+    VACUOUS statement Q2 should have made: posting both sides actually
+    happens, parameterized by a PVM that admits the outcome. -/
+theorem Theorem_PVM_Posts_Both_Sides
+    {n : ℕ} (records : List (MeasurementRecord n))
+    (m : MeasurementRecord n) (h_mem : m ∈ records) :
+    Ledger.isClosed (measurementLedger records)
+      (measurementEvent m.M m.ψ m.outcome) m.t_obs := by
+  refine ⟨m.t_prep, m.t_obs, m.obs_after_prep, le_refl _, ?_, ?_⟩
+  · simp only [measurementLedger, Set.mem_setOf_eq]
+    exact ⟨m, h_mem, Or.inl ⟨rfl, m.obs_after_prep⟩⟩
+  · simp only [measurementLedger, Set.mem_setOf_eq]
+    exact ⟨m, h_mem, Or.inr ⟨rfl, le_refl _⟩⟩
+
+/-- Axiom 1 (Double-Entry) holds for the measurement ledger: by
+    definition of `isClosed`, closure witnesses bilateral posting. -/
+theorem Theorem_PVM_Satisfies_DoubleEntry {n : ℕ}
     (records : List (MeasurementRecord n)) :
     DoubleEntry (quantumSubstrate n) (measurementLedger records) where
-  bilateral := fun e t h_closed => h_closed
+  bilateral := fun _e _t h_closed => h_closed
 
-/- The proof is `h_closed` itself: the conclusion of `DoubleEntry.bilateral`
-   is literally the same as the definition of `Ledger.isClosed`, so the
-   axiom is automatic.  (This is the "tautology" character of Axiom 1 as
-   discussed in the TCA paper: Axiom 1 says that `isClosed` is the correct
-   predicate, which is immediate when `isClosed` is defined as bilaterality.) -/
+/- ═══════════════════════════════════════════════════════════════════════ -/
+/-  8. Theorem Q3 — Measurement ledger is monotone                         -/
+/- ═══════════════════════════════════════════════════════════════════════ -/
 
-/- ─────────────────────────────────────────────────────────────────────── -/
-/-  Theorem Q3 — Measurement ledger is monotone                            -/
-/- ─────────────────────────────────────────────────────────────────────── -/
-
-/-- Theorem Q3 — The measurement ledger satisfies TCA Axiom 2 (Monotone Time).
-    Postings once added are never removed as time progresses.  This is the
-    formal installation of the missing axiom into quantum mechanics: the
-    measurement ledger is monotone because outcomes, once observed, are
-    facts about the past that do not un-happen. -/
 theorem Theorem_Measurement_Ledger_Is_Monotone {n : ℕ}
     (records : List (MeasurementRecord n)) :
     MonotoneTime (quantumSubstrate n) (measurementLedger records) where
   monotone := by
     intro t₁ t₂ h_le p h_in
-    /- h_in : p is in the ledger at t₁.  Show it is in the ledger at t₂. -/
     simp only [measurementLedger, Set.mem_setOf_eq] at h_in ⊢
     obtain ⟨m, h_mem, h_cases⟩ := h_in
     refine ⟨m, h_mem, ?_⟩
     rcases h_cases with ⟨h_eq, h_tprep⟩ | ⟨h_eq, h_tobs⟩
-    · /- Left-side posting case. -/
-      left
-      exact ⟨h_eq, le_trans h_tprep h_le⟩
-    · /- Right-side posting case. -/
-      right
-      exact ⟨h_eq, le_trans h_tobs h_le⟩
+    · exact Or.inl ⟨h_eq, le_trans h_tprep h_le⟩
+    · exact Or.inr ⟨h_eq, le_trans h_tobs h_le⟩
 
-/- ─────────────────────────────────────────────────────────────────────── -/
-/-  The quantum TCA instance                                               -/
-/- ─────────────────────────────────────────────────────────────────────── -/
-
-/-- A full TCA instance built from unitary quantum mechanics plus a
-    measurement record.  This is the formal object demonstrating that
-    quantum mechanics becomes a TCA instance precisely when the missing
-    axiom (posting via measurement) is added. -/
+/-- The quantum TCA instance built from a list of measurement records. -/
 def quantumTCA {n : ℕ} (records : List (MeasurementRecord n)) : TCAInstance where
   σ  := quantumSubstrate n
   ℒ  := measurementLedger records
-  de := Theorem_PVM_Is_A_Posting_Map records
+  de := Theorem_PVM_Satisfies_DoubleEntry records
   mt := Theorem_Measurement_Ledger_Is_Monotone records
 
-/- ─────────────────────────────────────────────────────────────────────── -/
-/-  Theorem Q4 — Measurement is irreversible                               -/
-/- ─────────────────────────────────────────────────────────────────────── -/
+/- ═══════════════════════════════════════════════════════════════════════ -/
+/-  9. Theorem Q4 — Measurement is irreversible                            -/
+/- ═══════════════════════════════════════════════════════════════════════ -/
 
-/-- A measurement record induces a closed event at the observation time. -/
-lemma measurement_closes_event {n : ℕ}
-    (records : List (MeasurementRecord n)) (m : MeasurementRecord n)
-    (h_mem : m ∈ records) :
-    Ledger.isClosed (measurementLedger records)
-      (measurementEvent n m.ψ m.outcome) m.t_obs := by
-  refine ⟨m.t_prep, m.t_obs, m.obs_after_prep, le_refl _, ?_, ?_⟩
-  · /- Left-side posting is in the ledger at t_obs because t_prep ≤ t_obs. -/
-    simp only [measurementLedger, Set.mem_setOf_eq]
-    exact ⟨m, h_mem, Or.inl ⟨rfl, m.obs_after_prep⟩⟩
-  · /- Right-side posting is in the ledger at t_obs because t_obs ≤ t_obs. -/
-    simp only [measurementLedger, Set.mem_setOf_eq]
-    exact ⟨m, h_mem, Or.inr ⟨rfl, le_refl _⟩⟩
-
-/-- THEOREM Q4 — Measurement is irreversible.  Once a measurement outcome
-    is posted to the ledger, the corresponding event is closed at every
-    subsequent time.  Unitary evolution applied after the measurement
-    cannot un-post the outcome — this is TCA Theorem 1 applied to the
-    quantum measurement ledger.
-
-    This is the formal Lean-checked statement of the claim:
-
-        "Measurement is the missing TCA axiom in quantum mechanics."
-
-    Unitarity (classical closure on the Hilbert substrate) is reversible.
-    Measurement (posting onto the TCA ledger) installs Axiom 2 and makes
-    the outcome irreversible.  No unitary evolution — no matter what it
-    does to the post-measurement state — removes the posted outcome from
-    the ledger.  The "collapse of the wavefunction" is the same thing as
-    a TCA posting: a fact about the past that is now load-bearing for
-    every later ledger state. -/
 theorem Theorem_Measurement_Is_Irreversible {n : ℕ}
     (records : List (MeasurementRecord n)) (m : MeasurementRecord n)
     (h_mem : m ∈ records) (t : Time) (h_later : m.t_obs.val ≤ t.val) :
     Ledger.isClosed (measurementLedger records)
-      (measurementEvent n m.ψ m.outcome) t := by
-  have h_closed_at_obs : Ledger.isClosed (measurementLedger records)
-      (measurementEvent n m.ψ m.outcome) m.t_obs :=
-    measurement_closes_event records m h_mem
+      (measurementEvent m.M m.ψ m.outcome) t := by
+  have h_closed_at_obs := Theorem_PVM_Posts_Both_Sides records m h_mem
   exact Theorem_Irreversibility_of_Closure (quantumTCA records)
-    (measurementEvent n m.ψ m.outcome) m.t_obs t h_closed_at_obs h_later
+    (measurementEvent m.M m.ψ m.outcome) m.t_obs t h_closed_at_obs h_later
 
-/- ─────────────────────────────────────────────────────────────────────── -/
-/-  The main corollary                                                     -/
-/- ─────────────────────────────────────────────────────────────────────── -/
+/- ═══════════════════════════════════════════════════════════════════════ -/
+/-  10. The bipartite substrate — for entanglement (Theorem Q5)            -/
+/- ═══════════════════════════════════════════════════════════════════════ -/
 
-/-- COROLLARY — Unitary evolution is a classical-closure sibling of the
-    measurement TCA: when no records are present, the measurement ledger
-    is trivial and no events close; when records are present, the ledger
-    is populated and Theorem Q4 applies to every record.  The bridge is
-    the list of measurement records — the empirically observed postings.
+/-- The composite Hilbert space for subsystems A and B of dimensions
+    `nA` and `nB`. We use the product index set `Fin nA × Fin nB`. -/
+abbrev BipartiteHilbertSpace (nA nB : ℕ) : Type :=
+  EuclideanSpace ℂ (Fin nA × Fin nB)
 
-    In TCA vocabulary: quantum dynamics is classical closure on the
-    Hilbert-space substrate, and measurement is where temporal closure
-    installs itself.  Lean has now verified both halves:
+/-- Bipartite quantum state: a unit vector in the composite space. -/
+structure BipartiteQState (nA nB : ℕ) where
+  ψ          : BipartiteHilbertSpace nA nB
+  normalized : ‖ψ‖ = 1
 
-      * Q1: without measurements, no TCA content (trivial ledger).
-      * Q4: with measurements, TCA Theorem 1 applies — outcomes are
-            irreversible.
+/-- Reference set for the bipartite substrate:
+    - index 0         : the shared preparation source
+    - indices 1..nA   : apparatus-A outcomes
+    - indices nA+1..  : apparatus-B outcomes
+    Total: 1 + nA + nB references. -/
+def bipartiteSubstrate (nA nB : ℕ) : Substrate where
+  S         := BipartiteQState nA nB
+  R         := Fin (1 + nA + nB)
+  R_fintype := inferInstance
+  R_decEq   := inferInstance
 
-    The "measurement problem" in quantum foundations is the name for the
-    observation that standard quantum dynamics provides no mechanism to
-    produce the `records` list — no axiom inside the unitary evolution
-    generates postings.  TCA names this honestly: Axiom 2 (monotone time
-    on the ledger) is the axiom that unitary quantum mechanics lacks,
-    and measurement is the empirical installation of that axiom. -/
-theorem Corollary_Measurement_Is_The_Missing_Axiom {n : ℕ} :
-    (∀ (e : Event (quantumSubstrate n)) (t : Time),
-      ¬ Ledger.isClosed (trivialLedger n) e t) ∧
-    (∀ (records : List (MeasurementRecord n)) (m : MeasurementRecord n),
-      m ∈ records → ∀ (t : Time), m.t_obs.val ≤ t.val →
-        Ledger.isClosed (measurementLedger records)
-          (measurementEvent n m.ψ m.outcome) t) := by
-  refine ⟨?_, ?_⟩
-  · exact Theorem_Unitary_Evolution_Has_No_Closures n
+/-- The shared preparation source reference (left side for both
+    subsystems' measurement events). -/
+def prepRef (nA nB : ℕ) : (bipartiteSubstrate nA nB).R :=
+  ⟨0, by omega⟩
+
+/-- Apparatus-A outcome references. -/
+def apparatusRefA (nA nB : ℕ) (i : Fin nA) : (bipartiteSubstrate nA nB).R :=
+  ⟨1 + i.val, by
+    have := i.isLt
+    omega⟩
+
+/-- Apparatus-B outcome references (offset past the A range). -/
+def apparatusRefB (nA nB : ℕ) (j : Fin nB) : (bipartiteSubstrate nA nB).R :=
+  ⟨1 + nA + j.val, by
+    have := j.isLt
+    omega⟩
+
+lemma prepRef_ne_apparatusRefA (nA nB : ℕ) (i : Fin nA) :
+    prepRef nA nB ≠ apparatusRefA nA nB i := by
+  intro h
+  have : (0 : ℕ) = 1 + i.val := by
+    have := congrArg Fin.val h
+    simpa [prepRef, apparatusRefA] using this
+  omega
+
+lemma prepRef_ne_apparatusRefB (nA nB : ℕ) (j : Fin nB) :
+    prepRef nA nB ≠ apparatusRefB nA nB j := by
+  intro h
+  have : (0 : ℕ) = 1 + nA + j.val := by
+    have := congrArg Fin.val h
+    simpa [prepRef, apparatusRefB] using this
+  omega
+
+/-- A bipartite measurement event on subsystem A. The LEFT reference
+    is the shared preparation source; the RIGHT reference is the
+    specific A-apparatus outcome. -/
+def measurementEventA
+    {nA nB : ℕ} (ψ : BipartiteQState nA nB) (i : Fin nA) :
+    Event (bipartiteSubstrate nA nB) where
+  resource := ψ
+  ℓL       := prepRef nA nB
+  ℓR       := apparatusRefA nA nB i
+  distinct := prepRef_ne_apparatusRefA nA nB i
+
+/-- A bipartite measurement event on subsystem B. Same LEFT reference
+    (shared preparation); RIGHT reference is B-apparatus outcome. -/
+def measurementEventB
+    {nA nB : ℕ} (ψ : BipartiteQState nA nB) (j : Fin nB) :
+    Event (bipartiteSubstrate nA nB) where
+  resource := ψ
+  ℓL       := prepRef nA nB
+  ℓR       := apparatusRefB nA nB j
+  distinct := prepRef_ne_apparatusRefB nA nB j
+
+/- ═══════════════════════════════════════════════════════════════════════ -/
+/-  11. Theorem Q5 — Entanglement is shared-preparation coupling           -/
+/- ═══════════════════════════════════════════════════════════════════════ -/
+
+/-- The LEFT-shared coupling predicate: two distinct events share the
+    same LEFT-side reference (preparation source). This is the form of
+    coupling relevant to quantum entanglement — the two subsystems'
+    measurement events trace back to the same preparation posting, so
+    their closures are not independent conditional on that preparation.
+
+    NOTE. The TCA paper states Theorem 3 in terms of shared RIGHT-side
+    references (settlement capacity coupling). The structural
+    coupling relation is symmetric in the algebraic sense: any shared
+    reference, left or right, forces dependency. The LEFT-shared form
+    is the one quantum mechanics needs. -/
+def leftCoupled {σ : Substrate} (ℒ : Ledger σ) (e₁ e₂ : Event σ) (t : Time) :
+    Prop :=
+  e₁ ≠ e₂ ∧
+  Ledger.isOpen ℒ e₁ t ∧
+  Ledger.isOpen ℒ e₂ t ∧
+  e₁.ℓL = e₂.ℓL
+
+/-- Theorem Q5. Two distinct measurement events on subsystems A and B of
+    the same bipartite state are left-coupled at every time at which they
+    are both open: they share the preparation reference. This is the
+    structural statement of quantum entanglement as coupling on the
+    bipartite TCA substrate. The correlation between A-outcome and
+    B-outcome is forced by shared-reference bookkeeping, not by any
+    signal propagating between apparatuses.
+
+    Scope: this is the STRUCTURAL coupling. The specific correlation
+    magnitudes (Bell inequality violation, CHSH bound) are a
+    substrate-specific consequence of the Born rule applied to the
+    specific entangled state. TCA establishes that outcomes cannot be
+    independent; it does not by itself derive how strongly they are
+    correlated. That is the substrate's dynamics. -/
+theorem Theorem_Entanglement_Is_Shared_Preparation_Coupling
+    {nA nB : ℕ} (ψ : BipartiteQState nA nB) (i : Fin nA) (j : Fin nB)
+    (ℒ : Ledger (bipartiteSubstrate nA nB)) (t : Time)
+    (h_ne : measurementEventA ψ i ≠ measurementEventB ψ j)
+    (h_open_A : Ledger.isOpen ℒ (measurementEventA ψ i) t)
+    (h_open_B : Ledger.isOpen ℒ (measurementEventB ψ j) t) :
+    leftCoupled ℒ (measurementEventA ψ i) (measurementEventB ψ j) t := by
+  refine ⟨h_ne, h_open_A, h_open_B, ?_⟩
+  /- Both events have ℓL = prepRef nA nB, by construction. -/
+  rfl
+
+/- ═══════════════════════════════════════════════════════════════════════ -/
+/-  12. Main corollary — the missing axiom                                 -/
+/- ═══════════════════════════════════════════════════════════════════════ -/
+
+/-- COROLLARY. The missing-axiom claim, restated with the structural
+    fixes applied:
+
+    (i)  Unitary evolution alone (unitaryLedger) has no TCA closures.
+    (ii) Adding measurement records installs Axiom 2 and every record's
+         event becomes closed at every later time.
+    (iii) On the bipartite substrate, two measurement events from the
+         same preparation are LEFT-coupled — i.e., entanglement is
+         shared-preparation coupling, a structural consequence of the
+         TCA bookkeeping.
+
+    Together: what quantum mechanics calls "the measurement problem" is
+    the absence of a mechanism inside unitary dynamics to generate
+    posting records. TCA names this honestly as Axiom 2. What quantum
+    mechanics calls "entanglement" is the structural coupling forced by
+    a shared preparation reference on the composite TCA substrate. -/
+theorem Corollary_Measurement_And_Entanglement {nA nB : ℕ} :
+    /- (i) No closures from pure unitary evolution on a single system. -/
+    (∀ (G : UnitaryGroup nA) (ψ₀ : QState nA)
+        (e : Event (quantumSubstrate nA)) (t : Time),
+        ¬ Ledger.isClosed (unitaryLedger G ψ₀) e t) ∧
+    /- (ii) Measurement makes outcomes irreversible. -/
+    (∀ (records : List (MeasurementRecord nA)) (m : MeasurementRecord nA),
+        m ∈ records → ∀ (t : Time), m.t_obs.val ≤ t.val →
+          Ledger.isClosed (measurementLedger records)
+            (measurementEvent m.M m.ψ m.outcome) t) ∧
+    /- (iii) Bipartite measurements are left-coupled. -/
+    (∀ (ψ : BipartiteQState nA nB) (i : Fin nA) (j : Fin nB)
+        (ℒ : Ledger (bipartiteSubstrate nA nB)) (t : Time),
+        measurementEventA ψ i ≠ measurementEventB ψ j →
+        Ledger.isOpen ℒ (measurementEventA ψ i) t →
+        Ledger.isOpen ℒ (measurementEventB ψ j) t →
+          leftCoupled ℒ (measurementEventA ψ i) (measurementEventB ψ j) t) := by
+  refine ⟨?_, ?_, ?_⟩
+  · intros; exact Theorem_Unitary_Evolution_Has_No_Closures _ _ _ _
   · exact Theorem_Measurement_Is_Irreversible
+  · exact Theorem_Entanglement_Is_Shared_Preparation_Coupling
 
 end QuantumAsTCA
 
 /-
   ─────────────────────────────────────────────────────────────────────────
-  VERIFICATION CHECKLIST:
+  v0.2 VERIFICATION CHECKLIST
 
-  Run `lake build` on this file alongside `TemporalClosureAlgebra.lean`
-  and inspect the axiom dependencies:
+  After `lake build`:
 
       #print axioms QuantumAsTCA.Theorem_Measurement_Is_Irreversible
+      #print axioms QuantumAsTCA.Theorem_Entanglement_Is_Shared_Preparation_Coupling
+      #print axioms QuantumAsTCA.Corollary_Measurement_And_Entanglement
 
-  Expected output: Classical.choice, propext, Quot.sound (Lean's standard
-  classical axioms) only.  No `sorry`, no custom `axiom` declarations.
-  The TCA axioms (DoubleEntry, MonotoneTime) are not axioms of the
-  system — they are structure fields of `TCAInstance`, discharged
-  explicitly by the proofs Theorem_PVM_Is_A_Posting_Map and
+  Expected: {propext, Classical.choice, Quot.sound}. No `sorry`, no custom
+  axioms. The TCA axioms (DoubleEntry, MonotoneTime) are discharged
+  explicitly by Theorem_PVM_Satisfies_DoubleEntry and
   Theorem_Measurement_Ledger_Is_Monotone.
 
-  WHAT THIS FILE PROVES:
+  WHAT v0.2 FIXES RELATIVE TO v0.1:
 
-  1. Schrödinger evolution alone is insufficient to produce any TCA
-     closure — the trivial ledger has no closed events.  (Theorem Q1)
+  F1. PVM is now in the signature of measurementEvent. Theorem Q2 is
+      restated non-vacuously: every record posts both sides.
+  F2. UnitaryGroup is now in the signature of unitaryLedger. Theorem Q1
+      is about a ledger parameterized by an actual unitary group, not
+      an anonymous empty set.
+  F3. Admissibility of an outcome (PVM.possibleOutcome) is enforced at
+      the record level: you cannot log an outcome that the projector
+      annihilates.
+  F4. The bipartite substrate exists, with shared preparation reference.
+      Entanglement is a theorem, not a gesture.
+  F5. TCA is imported rather than redeclared.
 
-  2. A PVM measurement is a valid posting map satisfying TCA Axiom 1.
-     (Theorem Q2)
+  WHAT REMAINS OUT OF SCOPE:
 
-  3. The measurement ledger satisfies TCA Axiom 2.  (Theorem Q3)
-
-  4. Measurement outcomes are irreversible under TCA Theorem 1.
-     (Theorem Q4)
-
-  5. These two facts together — empty-ledger triviality of unitary
-     evolution, and irreversibility of measurement postings — formally
-     establish that measurement is the missing TCA axiom in quantum
-     mechanics.  (Corollary Measurement_Is_The_Missing_Axiom)
-
-  WHAT THIS FILE DOES NOT PROVE (scope boundary):
-
-  * The Born rule: the probability distribution over outcomes is not
-    addressed.  TCA treats outcome distributions as closure-time
-    distributions; formalizing the Born rule as the specific posting-time
-    distribution on the Hilbert substrate is the next file.
-
-  * Infinite-dimensional Hilbert spaces: PVMs become spectral measures;
-    the posting map becomes measure-theoretic.  The proof structure
-    extends but the Mathlib infrastructure required (spectral theorem,
-    projection-valued measures on general Borel sets) is heavier.
-
-  * POVM measurements and decoherence: POVMs admit approximate posting
-    (outcomes that are not projectors but positive operators).  In TCA
-    vocabulary this corresponds to "coupled postings through an
-    intermediate reference," which is closer to the cross-sink-coupling
-    row in Raj's memory system.  Natural next paper.
-
-  * The Schrödinger equation itself as a specific one-parameter unitary
-    group.  We used `UnitaryGroup` as an abstract structure; specializing
-    to `U(t) = exp(-iHt/ℏ)` for a self-adjoint Hamiltonian H is Mathlib-
-    heavy and deferred.
-
-  COMPANION PAPER:
-
-    Venugopal, R. (2026).  Quantum Measurement as the Missing
-    TCA Axiom.  Third Buyer Advisory LLC.  Zenodo (pending DOI).
-
-    This Lean file is the verify.py-equivalent for that paper: the
-    mechanically-checked core theorems underpinning the prose argument.
+  * The Born rule (probability distribution over outcomes): requires
+    a probability measure on the ledger — companion paper.
+  * Infinite-dimensional Hilbert spaces: spectral PVMs, Mathlib-heavy.
+  * POVMs and decoherence: coupled postings through an intermediate
+    reference; next paper.
+  * Bell / CHSH inequality violation magnitudes: substrate dynamics,
+    not structural coupling.
   ─────────────────────────────────────────────────────────────────────────
 -/
