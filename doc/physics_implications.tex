@@ -282,9 +282,15 @@ S2. Default persists & Open geodesic stays open & PROVED & none \\
 S3. Completed irrev. & Absorption is permanent & PROVED & none \\
 S4. Singularity & Permanent default ($\forall t$) & PROVED & none \\
 S5. Black hole & Shared absorption = coupled & PROVED & none \\
+\midrule
+IP1. Per-substrate & Monotone time is independent & PROVED & none \\
+IP2. Cross-substrate & Quantum can't close spacetime & PROVED & none \\
+IP3. Info persists & Left postings survive forever & PROVED & none \\
+IP4. Never lost & Information $\neq$ destroyed & PROVED & none \\
+IP5. Dichotomy & Closed or open, no third state & PROVED & none \\
 \bottomrule
 \end{tabular}
-\caption{Lean 4.29.1, mathlib v4.29.1.  \textbf{18~theorems, zero sorry,
+\caption{Lean 4.29.1, mathlib v4.29.1.  \textbf{23~theorems, zero sorry,
 zero sorryAx.}  All depend only on \texttt{propext},
 \texttt{Classical.choice}, \texttt{Quot.sound}.}
 \end{table}
@@ -292,7 +298,7 @@ zero sorryAx.}  All depend only on \texttt{propext},
 %%% ===================================================================
 \section{Summary}
 
-Two axioms.  Eighteen theorems.  Zero sorry.  Three physics domains:
+Two axioms.  Twenty-three theorems.  Zero sorry.  Four physics domains:
 
 \begin{enumerate}[leftmargin=2em]
 \item \textbf{Thermodynamics} (TCA Theorem~1).  The second law is
@@ -309,6 +315,15 @@ Two axioms.  Eighteen theorems.  Zero sorry.  Three physics domains:
   (S1).  Singularities are permanent default (S4).  Black holes are
   capacity-saturated absorption references with coupled open events
   (S5).  Lean-verified.
+
+\item \textbf{Information paradox} (InformationParadox, 5~theorems).
+  The black hole information paradox is a substrate confusion.
+  Quantum unitarity and geodesic incompleteness operate on independent
+  ledgers (IP1).  Open items on the spacetime substrate cannot be
+  ``destroyed'' by events on the quantum substrate (IP2).  Information
+  (left-side postings) persists at all later times by monotone time
+  (IP3--IP4).  Every event is either closed or open --- ``lost'' is
+  not a ledger state (IP5).  Lean-verified.
 \end{enumerate}
 
 The claims are structural.  They say: if you model physics as closure
