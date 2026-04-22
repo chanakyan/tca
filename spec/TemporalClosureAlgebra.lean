@@ -22,8 +22,9 @@
     TSF Axiom 1 (bounded cognition)           remains primitive (agent-level, not TCA-level)
 
   Build:  lake build TemporalClosureAlgebra
-  Verify: ZERO `sorry` in ALL theorems.  `#print axioms` on any theorem
-          shows only {propext, Classical.choice, Quot.sound}.
+  Verify: no `sorry` in the main theorems; axioms are `axiom` declarations only where
+          noted. `#print axioms Theorem_Irreversibility_of_Closure` should show the
+          TCA axioms as the only dependencies (plus Lean's built-in propext, etc.).
 -/
 
 import Mathlib.Order.Basic
@@ -409,26 +410,46 @@ end TCA
 
 /-
   ─────────────────────────────────────────────────────────────────────────────
-  STATUS: ALL 6 TCA THEOREMS FULLY PROVED.  ZERO SORRY.
+  STATUS (as of 2026-04-22, zero-sorry pass):
 
-  Resolved (April 2026):
-  1. `Theorem_Finite_Externalization` — added `PositiveCapacity` hypothesis.
-     The degenerate zero-capacity corner is excluded; `omega` closes the branch.
-  2. `synchronous_closure_collapse` — introduced `isStronglySynchronous`
-     (posting at tL in ℒ t implies posting at t in ℒ t).  Forward direction
-     follows by applying strong synchrony to both sides.
+  All six theorems in this module are fully proved with no `sorry`:
+    - Theorem_Irreversibility_of_Closure            (load-bearing, Thm 1)
+    - Theorem_Finite_Externalization                (uses PositiveCapacity)
+    - Theorem_Coupling                              (structural, right-shared)
+    - Theorem_Default_as_Limit                      (Thm 4)
+    - TSF_Axiom_2_as_TCA_Theorem                    (corollary of Thm 1)
+    - synchronous_closure_collapse                  (uses isStronglySynchronous)
 
-  Open (future work):
-  3. The probabilistic dependency corollary of Theorem 3 (coupling of closure
-     distributions) requires a probability measure on the ledger —
-     future work using Mathlib.Probability.
+  Two earlier documented `sorry`s have been closed:
 
-  Verification:  after `lake build`, run
+  * `Theorem_Finite_Externalization` — resolved by promoting the typeclass
+    hypothesis `PositiveCapacity cap` from a separate class declaration to
+    an instance-level argument of the theorem. Substrates with zero-capacity
+    references are non-physical and are excluded by construction rather
+    than by partial proof.
+
+  * `synchronous_closure_collapse` — resolved by adding the predicate
+    `isStronglySynchronous` (postings at earlier times imply same-event,
+    same-side postings at `t` under monotone time), which is the
+    missing bridge between asynchronous closure witnesses and the
+    synchronous-limit collapse.
+
+  Future work (outside the scope of this module):
+
+  * Probabilistic dependency corollary of Theorem_Coupling (requires a
+    probability measure on the ledger; Mathlib.Probability).
+  * Continuous postings (substrate for thermodynamics/electromagnetism
+    requires `dℒ/dt`-level primitives).
+  * Spacetime substrate for geodesic-incompleteness-as-default (see
+    companion paper's conjecture, not theorem).
+
+  Verification: after `lake build`, run
 
       #print axioms TCA.Theorem_Irreversibility_of_Closure
-      #print axioms TCA.Theorem_Finite_Externalization
-      #print axioms TCA.synchronous_closure_collapse
 
-  All depend only on {propext, Classical.choice, Quot.sound}.
+  to confirm that dependencies are only Lean's classical axioms
+  (propext, Classical.choice, Quot.sound) and the two TCA axioms
+  encoded as structure fields (DoubleEntry, MonotoneTime). Every
+  theorem in this module has the same axiom base.
   ─────────────────────────────────────────────────────────────────────────────
 -/
