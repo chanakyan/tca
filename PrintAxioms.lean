@@ -6,6 +6,7 @@ import InformationParadox
 import EquityPremium
 import SubstrateConfusions
 import EconomicConfusions
+import BiologicalConfusions
 
 -- TCA
 #print axioms TCA.Theorem_Irreversibility_of_Closure
@@ -68,3 +69,15 @@ import EconomicConfusions
 #print axioms EconomicConfusions.peso_problem_dissolved
 #print axioms EconomicConfusions.gibson_paradox_dissolved
 #print axioms EconomicConfusions.economic_substrates_independent
+
+-- Biological Confusions
+#print axioms BiologicalConfusions.aging_is_open_item_accumulation
+#print axioms BiologicalConfusions.repair_is_irreversible
+#print axioms BiologicalConfusions.microbiome_is_cross_substrate_coupling
+#print axioms BiologicalConfusions.dysbiosis_is_broken_crosslink
+#print axioms BiologicalConfusions.cancer_is_checkpoint_failure
+#print axioms BiologicalConfusions.normal_replication_closes
+#print axioms BiologicalConfusions.autoimmunity_is_misdirected_closure
+#print axioms BiologicalConfusions.resistance_is_kill_default
+#print axioms BiologicalConfusions.resistance_coupling
+#print axioms BiologicalConfusions.biological_substrates_independent
