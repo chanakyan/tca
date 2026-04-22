@@ -261,47 +261,65 @@ CPT & Total quantum numbers & Particle-antiparticle balance \\
 \centering
 \begin{tabular}{@{}llll@{}}
 \toprule
-\textbf{Theorem} & \textbf{Physics implication} & \textbf{Lean status} & \textbf{sorry?} \\
+\textbf{Theorem} & \textbf{Physics implication} & \textbf{Lean} & \textbf{sorry?} \\
 \midrule
-1. Irreversibility & Second law / arrow of time & PROVED & none \\
-2. Finite externalization & Capacity bounds & PROVED & 1 corner \\
-3. Coupling & Entanglement structure & PROVED & none \\
-4. Default as limit & Singularity characterization & PROVED & none \\
-TSF Axiom 2 = Thm 1 & Irreversible time & PROVED & none \\
+TCA 1. Irreversibility & Second law / arrow of time & PROVED & none \\
+TCA 2. Finite ext. & Capacity bounds & PROVED & none \\
+TCA 3. Coupling & Shared-reference dependence & PROVED & none \\
+TCA 4. Default & Closure failure = default & PROVED & none \\
+TCA 5. Sync. collapse & Classical algebra at $t\to 0$ & PROVED & none \\
+TCA 6. TSF Axiom 2 & Irreversible time & PROVED & none \\
+\midrule
+Q1. Unitary no closures & Schr\"odinger has no postings & PROVED & none \\
+Q2. PVM posts both & Measurement is bilateral & PROVED & none \\
+Q3. PVM double-entry & Measurement satisfies Ax.~1 & PROVED & none \\
+Q4. Ledger monotone & Measurement is irreversible & PROVED & none \\
+Q5. Entanglement & Shared prep.\ = coupling & PROVED & none \\
+Q6. Corollary Q4+Q5 & Measurement + entanglement & PROVED & none \\
+\midrule
+S1. Geod.\ incomp. & Incompleteness IS default & PROVED & none \\
+S2. Default persists & Open geodesic stays open & PROVED & none \\
+S3. Completed irrev. & Absorption is permanent & PROVED & none \\
+S4. Singularity & Permanent default ($\forall t$) & PROVED & none \\
+S5. Black hole & Shared absorption = coupled & PROVED & none \\
 \bottomrule
 \end{tabular}
-\caption{Lean 4.29.1 + mathlib v4.29.1. Certificate at
-\texttt{proof/certs/lean\_2026-04-21T23-10-31Z.txt}.}
+\caption{Lean 4.29.1, mathlib v4.29.1.  \textbf{18~theorems, zero sorry,
+zero sorryAx.}  All depend only on \texttt{propext},
+\texttt{Classical.choice}, \texttt{Quot.sound}.}
 \end{table}
 
 %%% ===================================================================
 \section{Summary}
 
-Two axioms. Four theorems. Three implications for physics:
+Two axioms.  Eighteen theorems.  Zero sorry.  Three physics domains:
 
 \begin{enumerate}[leftmargin=2em]
-\item The second law of thermodynamics is TCA Theorem~1 on the
-  energy substrate. The arrow of time is monotone ledger growth.
-  Lean-verified.
+\item \textbf{Thermodynamics} (TCA Theorem~1).  The second law is
+  monotone ledger growth.  The arrow of time is an accounting
+  constraint.  Lean-verified.
 
-\item Quantum entanglement is TCA Theorem~3 on the probability
-  substrate. Correlated outcomes are shared-reference coupling,
-  not signals. Lean-verified.
+\item \textbf{Quantum mechanics} (QuantumAsTCA, 7~theorems).
+  Entanglement is shared-preparation coupling on a bipartite
+  substrate (Q5).  The Bell experiment is a three-party ledger.
+  Measurement is irreversible bilateral posting (Q4).  Lean-verified.
 
-\item Spacetime singularities are TCA Theorem~4 on the geodesic
-  substrate. Geodesic incompleteness is closure default.
-  Black holes are capacity-saturated posting references.
-  Lean-verified.
+\item \textbf{General relativity} (SpacetimeAsTCA, 5~theorems).
+  Geodesic incompleteness is TCA default on the spacetime substrate
+  (S1).  Singularities are permanent default (S4).  Black holes are
+  capacity-saturated absorption references with coupled open events
+  (S5).  Lean-verified.
 \end{enumerate}
 
-The claims are structural. They say: if you model physics as closure
-on substrates, these results follow from accounting alone. The
-quantitative content of physics --- the Lagrangians, the gauge groups,
-the coupling constants --- lives in the substrates, not in TCA. TCA
-provides the invariant; physics provides the instantiation.
+The claims are structural.  They say: if you model physics as closure
+on substrates, these results follow from accounting alone.  The
+quantitative content --- Lagrangians, gauge groups, coupling
+constants --- lives in the substrates.  TCA provides the invariant;
+physics provides the instantiation.
 
-The entire framework, from axioms to theorems to Lean proofs, is at
-\url{https://github.com/chanakyan/tca}. Clone it. Run
-\texttt{lake build}. Check the certificates. The accounting is open.
+The entire framework --- axioms, theorems, quantum and spacetime
+formalizations, Lean proofs, certificates --- is at
+\url{https://github.com/chanakyan/tca}.  Clone.  \texttt{lake build}.
+Check the certificates.  The accounting is open.
 
 \end{document}
