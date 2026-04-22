@@ -292,9 +292,11 @@ CPT & Total quantum numbers & Particle-antiparticle balance \\
 \textbf{Theorem} & \textbf{Physics implication} & \textbf{Lean} & \textbf{sorry?} \\
 \midrule
 TCA 1. Irreversibility & Second law / arrow of time & PROVED & none \\
-TCA 2. Finite ext. & Capacity bounds & PROVED & 1 corner \\
+TCA 2. Finite ext. & Capacity bounds & PROVED & none \\
 TCA 3. Coupling & Shared-reference dependence & PROVED & none \\
 TCA 4. Default & Singularity = closure failure & PROVED & none \\
+TCA 5. Sync. collapse & Classical algebra is $t\to 0$ limit & PROVED & none \\
+TCA 6. TSF Axiom 2 & Irreversible time = Thm 1 & PROVED & none \\
 \midrule
 Q1. Unitary no closures & Schrödinger has no postings & PROVED & none \\
 Q2. PVM posts both sides & Measurement is bilateral & PROVED & none \\
@@ -304,14 +306,15 @@ Q5. Entanglement & Shared preparation = coupling & PROVED & none \\
 Corollary: Q4+Q5 & Measurement resolves, prep couples & PROVED & none \\
 \bottomrule
 \end{tabular}
-\caption{Lean 4.29.1, mathlib v4.29.1.  11~theorems, 0~sorry in
-QuantumAsTCA.  Certificate at \texttt{proof/certs/lean\_v0.2\_*.txt}.}
+\caption{Lean 4.29.1, mathlib v4.29.1.  13~theorems, \textbf{zero sorry}.
+All depend only on \texttt{propext}, \texttt{Classical.choice}, \texttt{Quot.sound}.
+Certificate at \texttt{proof/certs/lean\_zero\_sorry\_*.txt}.}
 \end{table}
 
 %%% ===================================================================
 \section{Summary}
 
-Two axioms. Eleven theorems. Three implications for physics:
+Two axioms. Thirteen theorems. Zero sorry. Three implications for physics:
 
 \begin{enumerate}[leftmargin=2em]
 \item The second law of thermodynamics is TCA Theorem~1 on the
