@@ -1,7 +1,7 @@
 name = "TCA"
 version = "0.2.0"
 keywords = ["math", "algebra", "temporal", "quantum"]
-defaultTargets = ["TemporalClosureAlgebra", "QuantumAsTCA", "SpacetimeAsTCA", "InformationParadox"]
+defaultTargets = ["TemporalClosureAlgebra", "QuantumAsTCA", "SpacetimeAsTCA", "InformationParadox", "EquityPremium"]
 
 [leanOptions]
 pp.unicode.fun = true
@@ -27,4 +27,8 @@ srcDir = "spec"
 
 [[lean_lib]]
 name = "InformationParadox"
+srcDir = "spec"
+
+[[lean_lib]]
+name = "EquityPremium"
 srcDir = "spec"

@@ -3,6 +3,7 @@ import TemporalClosureAlgebra
 import QuantumAsTCA
 import SpacetimeAsTCA
 import InformationParadox
+import EquityPremium
 
 -- TCA
 #print axioms TCA.Theorem_Irreversibility_of_Closure
@@ -36,3 +37,10 @@ import InformationParadox
 #print axioms InformationParadox.IP3_spacetime_information_persists
 #print axioms InformationParadox.IP4_information_never_lost
 #print axioms InformationParadox.evaporation_dichotomy
+
+-- Equity Premium
+#print axioms EquityPremium.EP1_bond_closes
+#print axioms EquityPremium.EP2_equity_stays_open
+#print axioms EquityPremium.EP3_bond_settlement_irreversible
+#print axioms EquityPremium.EP4_equity_structural_default
+#print axioms EquityPremium.EP5_substrates_independent
