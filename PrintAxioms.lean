@@ -15,3 +15,7 @@ import QuantumAsTCA
 #print axioms QuantumAsTCA.Theorem_Measurement_Is_Irreversible
 #print axioms QuantumAsTCA.Theorem_Entanglement_Is_Shared_Preparation_Coupling
 #print axioms QuantumAsTCA.Corollary_Measurement_And_Entanglement
+
+-- Previously had sorry — now clean
+#print axioms TCA.Theorem_Finite_Externalization
+#print axioms TCA.synchronous_closure_collapse

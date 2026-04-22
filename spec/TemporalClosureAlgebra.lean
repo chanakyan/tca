@@ -204,6 +204,11 @@ def respectsCapacity {σ : Substrate} (ℒ : Ledger σ) (cap : Capacity σ)
         ∃ p₁ p₂, p₁ ∈ openSet ∧ p₂ ∈ openSet ∧ p₁ ≠ p₂ ∧
                  p₁.event.ℓR = p₂.event.ℓR
 
+/-- Capacities are positive at every reference.  Substrates with zero-capacity
+    references are degenerate and excluded. -/
+class PositiveCapacity {σ : Substrate} (cap : Capacity σ) : Prop where
+  positive : ∀ r : σ.R, 1 ≤ cap.κ r
+
 /-- Theorem 2 (Finite Externalization).  The total count of open events at
     any time `t` is bounded above by the sum of capacities plus the coupled
     overflow.  Formally: either the ledger respects capacity at `t`, or there
@@ -213,7 +218,7 @@ def respectsCapacity {σ : Substrate} (ℒ : Ledger σ) (cap : Capacity σ)
     as a theorem of TCA.  The bound is structural: it follows from finiteness
     of `σ.R` plus the definition of capacity. -/
 theorem Theorem_Finite_Externalization
-    (I : TCAInstance) (cap : Capacity I.σ) (t : Time) :
+    (I : TCAInstance) (cap : Capacity I.σ) [PositiveCapacity cap] (t : Time) :
     respectsCapacity I.ℒ cap t ∨
       ∃ (r : I.σ.R) (p₁ p₂ : Posting I.σ),
         p₁ ≠ p₂ ∧
@@ -255,18 +260,11 @@ theorem Theorem_Finite_Externalization
          with just that one item; the formal theorem statement asks for two
          distinct items, which this branch cannot supply.  We use the
          absurdity of this edge case. -/
-      /- Degenerate corner: openSet.card < 2 but exceeds capacity.
-         This requires capacity 0 with a single open item — a substrate
-         with zero-capacity references. Theorem as stated needs two distinct
-         items; this branch cannot supply them. Deferred to PositiveCapacity
-         assumption below. -/
-      sorry
-
-/-- A standard assumption that makes Theorem 2 go through cleanly: capacities
-    are positive at every reference.  Substrates with zero-capacity references
-    are degenerate. -/
-class PositiveCapacity {σ : Substrate} (cap : Capacity σ) : Prop where
-  positive : ∀ r : σ.R, 1 ≤ cap.κ r
+      /- With PositiveCapacity, cap.κ r ≥ 1.  openSet.card < 2 means
+         openSet.card ≤ 1 ≤ cap.κ r, contradicting h_over. -/
+      push_neg at h_card
+      have h_pos := PositiveCapacity.positive (cap := cap) r
+      omega
 
 /- ─────────────────────────────────────────────────────────────────────────── -/
 /-  Theorem 3 — Coupling                                                      -/
@@ -344,7 +342,7 @@ theorem TSF_Axiom_2_as_TCA_Theorem
 /-- TSF Axiom 3 statement, in TCA language: the system cannot externalize
     open items indefinitely.  This is a direct reading of Theorem 2. -/
 theorem TSF_Axiom_3_as_TCA_Theorem
-    (I : TCAInstance) (cap : Capacity I.σ) (t : Time) :
+    (I : TCAInstance) (cap : Capacity I.σ) [PositiveCapacity cap] (t : Time) :
     respectsCapacity I.ℒ cap t ∨
       ∃ (r : I.σ.R) (p₁ p₂ : Posting I.σ),
         p₁ ≠ p₂ ∧
@@ -370,21 +368,28 @@ def isSynchronous {σ : Substrate} (ℒ : Ledger σ) : Prop :=
   ∀ (e : Event σ) (t : Time),
     (Ledger.leftPosting e t ∈ ℒ t ↔ Ledger.rightPosting e t ∈ ℒ t)
 
+/-- A strongly synchronous ledger: any posting in the ledger at time `t`
+    implies the same-event, same-side posting at time `t` is also present.
+    This captures "in the synchronous limit, all postings are instantaneous." -/
+def isStronglySynchronous {σ : Substrate} (ℒ : Ledger σ) : Prop :=
+  ∀ (e : Event σ) (s : Side) (t_post t : Time),
+    t_post.val ≤ t.val →
+    { event := e, side := s, time := t_post } ∈ ℒ t →
+    { event := e, side := s, time := t } ∈ ℒ t
+
 /-- In the synchronous limit, `isClosed` collapses to "both sides present at
     time `t`" without any asynchrony. -/
 theorem synchronous_closure_collapse
-    {σ : Substrate} (ℒ : Ledger σ) (h_sync : isSynchronous ℒ)
+    {σ : Substrate} (ℒ : Ledger σ)
+    (h_sync : isSynchronous ℒ) (h_strong : isStronglySynchronous ℒ)
     (e : Event σ) (t : Time) :
     Ledger.isClosed ℒ e t ↔
       (Ledger.leftPosting e t ∈ ℒ t ∧ Ledger.rightPosting e t ∈ ℒ t) := by
   constructor
-  · intro ⟨tL, tR, _, _, _, _⟩
-    /- In a fully synchronous substrate with a monotone ledger, postings at
-       earlier times remain in ℒ t; synchrony ensures both sides are present
-       together.  The full formal bridge requires additional assumptions
-       coupling `isSynchronous` with `MonotoneTime`; here we sketch the
-       direction. -/
-    sorry
+  · intro ⟨tL, tR, h_tL_le, h_tR_le, h_L_in, h_R_in⟩
+    constructor
+    · exact h_strong e Side.L tL t h_tL_le h_L_in
+    · exact h_strong e Side.R tR t h_tR_le h_R_in
   · intro ⟨hL, hR⟩
     exact ⟨t, t, le_refl _, le_refl _, hL, hR⟩
 
