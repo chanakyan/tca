@@ -5,6 +5,7 @@ import SpacetimeAsTCA
 import InformationParadox
 import EquityPremium
 import SubstrateConfusions
+import EconomicConfusions
 
 -- TCA
 #print axioms TCA.Theorem_Irreversibility_of_Closure
@@ -57,3 +58,13 @@ import SubstrateConfusions
 #print axioms SubstrateConfusions.wave_particle_two_substrates
 #print axioms SubstrateConfusions.hierarchy_is_capacity_ratio
 #print axioms SubstrateConfusions.zeno_is_rapid_closure
+
+-- Economic Confusions
+#print axioms EconomicConfusions.phillips_breakdown
+#print axioms EconomicConfusions.forward_premium_dissolved
+#print axioms EconomicConfusions.dividend_puzzle_dissolved
+#print axioms EconomicConfusions.liquidity_is_closure_speed
+#print axioms EconomicConfusions.credit_spread_dissolved
+#print axioms EconomicConfusions.peso_problem_dissolved
+#print axioms EconomicConfusions.gibson_paradox_dissolved
+#print axioms EconomicConfusions.economic_substrates_independent
