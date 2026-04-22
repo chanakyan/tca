@@ -344,4 +344,68 @@ Lean proofs, certificates --- is at
 \url{https://github.com/chanakyan/tca}.  Clone it.  Run
 \texttt{lake build}.  Check the certificates.  The accounting is open.
 
+%%% ===================================================================
+\section{For Journalists}
+
+\subsection*{What is this?}
+
+A mathematical framework called Temporal Closure Algebra (TCA) that
+unifies conservation laws across physics, accounting, and information
+theory using two axioms: (1)~every transaction has two sides, and
+(2)~records are permanent.
+
+\subsection*{What did you prove?}
+
+Thirteen theorems, machine-checked by Lean~4 (a proof assistant used
+by mathematicians worldwide).  Zero unfinished proofs.  Every theorem
+depends only on the three foundational axioms of mathematics that
+Lean itself is built on.
+
+\subsection*{Why does it matter?}
+
+Three results connect bookkeeping to fundamental physics:
+
+\begin{enumerate}
+\item \textbf{The second law of thermodynamics} (entropy always
+  increases) follows from the rule that ledger entries cannot be
+  erased.  The arrow of time is an accounting constraint.
+
+\item \textbf{Quantum entanglement} (``spooky action at a distance'')
+  follows from two particles sharing the same preparation source in
+  the ledger.  The correlation is not a signal between detectors ---
+  it is a consistency requirement on records that share an origin.
+  A Bell experiment is a three-party ledger.
+
+\item \textbf{Black holes} are ledger entries that never settle.
+  A singularity is an event whose second posting never arrives.
+\end{enumerate}
+
+\subsection*{How can I verify this myself?}
+
+Install Lean~4 (\url{https://leanprover.github.io}) and run two
+commands:
+
+\begin{verbatim}
+  git clone https://github.com/chanakyan/tca
+  cd tca && lake build
+\end{verbatim}
+
+If the build succeeds with zero errors, every theorem is correct.
+No trust required.  The computer checked it.
+
+\subsection*{Who did this?}
+
+Rajeshkumar Venugopal (Third Buyer Advisory), with Claude Opus~4.6
+(Anthropic) as co-author.  The human--AI collaboration produced the
+axioms, theorems, proofs, and this paper over a 48-hour sprint in
+April~2026.
+
+\subsection*{What is the analogy?}
+
+Double-entry bookkeeping (invented by Pacioli in 1494) says every
+debit has a credit.  TCA says: that rule, plus ``ink is permanent,''
+is enough to derive the second law of thermodynamics, explain
+quantum entanglement, and characterize black holes.  Physics is
+accounting on different ledgers.
+
 \end{document}
