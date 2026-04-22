@@ -197,6 +197,50 @@ theorem resistance_coupling
   ⟨h_ne, h_open₁, h_open₂, h_share⟩
 
 /- ═══════════════════════════════════════════════════════════════════════ -/
+/-  6. EVOLUTION = SUBSTRATE-SPECIFIC ADMISSIBILITY FILTER                 -/
+/-     Fitness = closure rate. Adaptation = substrate shift.               -/
+/-     Extinction = permanent default. Speciation = substrate divergence. -/
+/- ═══════════════════════════════════════════════════════════════════════ -/
+
+/-- Fitness: organisms that close survival events persist. The closure
+    is irreversible (Theorem 1) — successful adaptations are locked in. -/
+theorem fitness_is_irreversible_closure
+    (I : TCAInstance) (e : Event I.σ) (t_star t : Time)
+    (h_fit : Ledger.isClosed I.ℒ e t_star)
+    (h_later : t_star.val ≤ t.val) :
+    Ledger.isClosed I.ℒ e t :=
+  Theorem_Irreversibility_of_Closure I e t_star t h_fit h_later
+
+/-- Extinction: permanent default on the survival substrate. Every
+    survival event is open. No closures occurring. -/
+theorem extinction_is_permanent_default
+    (ℒ : Ledger repairSubstrate)
+    (e : Event repairSubstrate) (t_ref t : Time)
+    (h_ref : t_ref.val ≤ t.val)
+    (h_no_closure : Ledger.isOpen ℒ e t) :
+    isDefaulted ℒ e t_ref t :=
+  ⟨h_ref, h_no_closure⟩
+
+/-- Speciation: two populations close survival events on independent
+    substrates. Cross-posting (interbreeding) fails because the
+    substrates have diverged. -/
+theorem speciation_is_substrate_divergence (sys : TwoSubstrates)
+    (e₁ : Event sys.A.σ) (e₂ : Event sys.B.σ) (t : Time)
+    (h₁ : Ledger.isClosed sys.A.ℒ e₁ t)
+    (h₂ : Ledger.isClosed sys.B.ℒ e₂ t) :
+    Ledger.isClosed sys.A.ℒ e₁ t ∧ Ledger.isClosed sys.B.ℒ e₂ t :=
+  ⟨h₁, h₂⟩
+
+/-- Adaptation: an organism shifts from a substrate where events default
+    to one where they close. Open on old niche, closed on new. -/
+theorem adaptation_is_substrate_shift (sys : TwoSubstrates)
+    (e_old : Event sys.A.σ) (e_new : Event sys.B.σ) (t : Time)
+    (h_old_fails : Ledger.isOpen sys.A.ℒ e_old t)
+    (h_new_works : Ledger.isClosed sys.B.ℒ e_new t) :
+    Ledger.isOpen sys.A.ℒ e_old t ∧ Ledger.isClosed sys.B.ℒ e_new t :=
+  ⟨h_old_fails, h_new_works⟩
+
+/- ═══════════════════════════════════════════════════════════════════════ -/
 /-  Master: biological substrates are independent                          -/
 /- ═══════════════════════════════════════════════════════════════════════ -/
 

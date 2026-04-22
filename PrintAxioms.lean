@@ -81,3 +81,7 @@ import BiologicalConfusions
 #print axioms BiologicalConfusions.resistance_is_kill_default
 #print axioms BiologicalConfusions.resistance_coupling
 #print axioms BiologicalConfusions.biological_substrates_independent
+#print axioms BiologicalConfusions.fitness_is_irreversible_closure
+#print axioms BiologicalConfusions.extinction_is_permanent_default
+#print axioms BiologicalConfusions.speciation_is_substrate_divergence
+#print axioms BiologicalConfusions.adaptation_is_substrate_shift
